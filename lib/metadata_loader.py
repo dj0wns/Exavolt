@@ -1,11 +1,24 @@
 import json
 import zipfile
+import os
 
 def collect_mods(folder):
-  None
+  mod_metadatas = []
+  for file in os.listdir(folder):
+    if file.endswith(".zip"):
+      path = os.path.join(folder, file)
+      mod_metadatas.append(collect_mod_metadata(path))
+  return mod_metadatas
 
-def collect_mod_metadata(file):
-  None
+def collect_mod_metadata(zip_file_path):
+  metadata = ModMetadata()
+  with zipfile.ZipFile(zip_file_path) as mod_zip:
+    for info in mod_zip.infolist():
+      if os.path.basename(info.filename).lower() == "manifest.json":
+        with mod_zip.open(info) as file:
+          metadata.from_json(file)
+          #todo replace all in manifest and check files
+          return metadata
 
 class ModMetadata:
   def __init__(self):
@@ -16,8 +29,26 @@ class ModMetadata:
     self.other_mst_files = []
     self.non_mst_files = []
 
-  def from_json(self, json_string):
-    mod_dict = json.load(json_string)
+  def __str__(self):
+    retstring = ""
+    retstring += f'Title: {self.title}\n'
+    retstring += f'Author: {self.author}\n'
+    retstring += f'Mods_required:\n'
+    for mod in self.mods_required:
+      retstring += f'\t{mod}\n'
+    retstring += f'Levels:\n'
+    for level in self.levels:
+      retstring += f'\t{level}\n'
+    retstring += f'Other MST Files:\n'
+    for other_mst_file in self.other_mst_files:
+      retstring += f'\t{other_mst_file}\n'
+    retstring += f'Non MST Files:\n'
+    for non_mst_file in self.non_mst_files:
+      retstring += f'\t{non_mst_file}\n'
+    return retstring
+
+  def from_json(self, json_file):
+    mod_dict = json.load(json_file)
 
     if "title" in mod_dict:
       if not isinstance(mod_dict['title'], str):

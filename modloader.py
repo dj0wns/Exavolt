@@ -2,11 +2,15 @@ import argparse
 
 import os
 import lib.iso
+import lib.metadata_loader
 
 def execute(input_iso, output_iso, mod_folder):
   tmp_dir = lib.iso.extract_iso(input_iso)
-  lib.iso.rebuild_iso(os.path.abspath(output_iso), tmp_dir.name + "/root")
-
+  mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+  print(len(mod_metadatas))
+  for metadata in mod_metadatas:
+    print(metadata)
+  lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Add mods to Metal Arms ISO file")
