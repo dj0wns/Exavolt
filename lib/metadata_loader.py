@@ -1,6 +1,8 @@
 import json
 import zipfile
 import os
+from .level import LEVEL_TYPES
+from .hacks import HACKS
 
 def collect_mods(folder):
   mod_metadatas = []
@@ -17,14 +19,14 @@ def collect_mod_metadata(zip_file_path):
       if os.path.basename(info.filename).lower() == "manifest.json":
         with mod_zip.open(info) as file:
           metadata.from_json(file)
-          #todo replace all in manifest and check files
+          #TODO replace all in manifest and check files
           return metadata
 
 class ModMetadata:
   def __init__(self):
     self.title = ""
     self.author = ""
-    self.mods_required = []
+    self.hacks_required = []
     self.levels = []
     self.other_mst_files = []
     self.non_mst_files = []
@@ -33,8 +35,8 @@ class ModMetadata:
     retstring = ""
     retstring += f'Title: {self.title}\n'
     retstring += f'Author: {self.author}\n'
-    retstring += f'Mods_required:\n'
-    for mod in self.mods_required:
+    retstring += f'Hacks_required:\n'
+    for mod in self.hacks_required:
       retstring += f'\t{mod}\n'
     retstring += f'Levels:\n'
     for level in self.levels:
@@ -66,16 +68,17 @@ class ModMetadata:
       # Required field
       raise KeyError('author')
 
-    self.mods_required = []
-    if "mods_required" in mod_dict:
-      if not isinstance(mod_dict['mods_required'], list):
-        raise ValueError('mods_required')
+    self.hacks_required = []
+    if "hacks_required" in mod_dict:
+      if not isinstance(mod_dict['hacks_required'], list):
+        raise ValueError('hacks_required')
       index = 0
-      for mod in mod_dict['mods_required']:
-        #TODO check mod valid
+      for mod in mod_dict['hacks_required']:
         if not isinstance(mod, str):
-          raise ValueError('mods_required[' + str(index) + ']')
-        self.mods_required.append(mod)
+          raise ValueError('hacks_required[' + str(index) + ']')
+        if mod not in HACKS:
+          raise ValueError('hacks_required[' + str(index) + ']')
+        self.hacks_required.append(mod)
         index += 1
 
     self.other_mst_files = []
@@ -112,7 +115,8 @@ class ModMetadata:
         if "type" in level:
           if not isinstance(level['type'], str):
             raise ValueError('levels[' + str(index) + ']["type"]')
-          #TODO verify type
+          if level['type'] not in LEVEL_TYPES:
+            raise ValueError('levels[' + str(index) + ']["type"]')
           new_level['type'] = level['type']
         else:
           # Required field
