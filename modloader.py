@@ -9,7 +9,7 @@ def execute(input_iso, output_iso, mod_folder):
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
   print(len(mod_metadatas))
   for metadata in mod_metadatas:
-    print(metadata)
+    print(metadata.summary())
   lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
 
 if __name__ == '__main__':

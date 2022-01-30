@@ -19,7 +19,7 @@ def collect_mod_metadata(zip_file_path):
       if os.path.basename(info.filename).lower() == "manifest.json":
         with mod_zip.open(info) as file:
           metadata.from_json(file)
-          #TODO replace all in manifest and check files
+          #TODO replace __all__ in manifest and check files
           return metadata
 
 class ModMetadata:
@@ -30,6 +30,20 @@ class ModMetadata:
     self.levels = []
     self.other_mst_files = []
     self.non_mst_files = []
+
+  def summary(self):
+    campaign_level_count = 0;
+    mp_level_count = 0
+    for level in self.levels:
+      if level["type"] == "campaign":
+        campaign_level_count += 1
+      elif level["type"] == "multiplayer":
+        mp_level_count += 1
+    return { "Title":self.title,
+             "Author":self.author,
+             "Campaign Levels":campaign_level_count,
+             "Multiplayer Levels":mp_level_count,
+             "Total Files": len(self.other_mst_files) + len(self.non_mst_files)}
 
   def __str__(self):
     retstring = ""
