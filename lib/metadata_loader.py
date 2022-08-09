@@ -13,7 +13,7 @@ def collect_mods(folder):
   return mod_metadatas
 
 def collect_mod_metadata(zip_file_path):
-  metadata = ModMetadata()
+  metadata = ModMetadata(zip_file_path)
   with zipfile.ZipFile(zip_file_path) as mod_zip:
     for info in mod_zip.infolist():
       if os.path.basename(info.filename).lower() == "manifest.json":
@@ -23,9 +23,10 @@ def collect_mod_metadata(zip_file_path):
           return metadata
 
 class ModMetadata:
-  def __init__(self):
+  def __init__(self, zip_file_path):
     self.title = ""
     self.author = ""
+    self.zip_file_path = zip_file_path
     self.hacks_required = []
     self.levels = []
     self.other_mst_files = []
@@ -43,7 +44,8 @@ class ModMetadata:
              "Author":self.author,
              "Campaign Levels":campaign_level_count,
              "Multiplayer Levels":mp_level_count,
-             "Total Files": len(self.other_mst_files) + len(self.non_mst_files)}
+             "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
+             "Path": self.zip_file_path}
 
   def __str__(self):
     retstring = ""

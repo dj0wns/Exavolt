@@ -3,6 +3,7 @@ import argparse
 import os
 import lib.iso
 import lib.metadata_loader
+import lib.insert_mod
 
 def execute(input_iso, output_iso, mod_folder):
   tmp_dir = lib.iso.extract_iso(input_iso)
@@ -10,6 +11,7 @@ def execute(input_iso, output_iso, mod_folder):
   print(len(mod_metadatas))
   for metadata in mod_metadatas:
     print(metadata.summary())
+    lib.insert_mod.insert_mod(metadata, tmp_dir)
   lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
 
 if __name__ == '__main__':
