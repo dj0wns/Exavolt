@@ -1,6 +1,7 @@
 import argparse
 
 import os
+import shutil
 import lib.iso
 import lib.metadata_loader
 import lib.insert_mod
@@ -12,6 +13,11 @@ def execute(input_iso, output_iso, mod_folder):
   for metadata in mod_metadatas:
     print(metadata.summary())
     lib.insert_mod.insert_mod(metadata, tmp_dir)
+  # copy over the corrected bi2.bin
+  new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
+  old_bi2 = os.path.join(tmp_dir.name,"root","sys","bi2.bin")
+  print(new_bi2, old_bi2)
+  shutil.copy(new_bi2, old_bi2)
   lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
 
 if __name__ == '__main__':
