@@ -6,8 +6,56 @@ import sys
 
 from .ma_tools import mst_extract
 from .ma_tools import mst_insert
+from .ma_tools import csv_rebuilder
 
-def insert_mod(metadata, iso_dir):
+FIRST_CSV_INDEX_LEVELS = 6
+NUM_LINES_PER_LEVEL = 2
+
+PICK_LEVEL_CSV_FILE = "pick_level$.csv"
+PICK_LEVEL_CSV_SUFFIX = ".new"
+
+def update_pick_level(metadata, iso_dir, first_level_index, is_gc):
+  #first extract pick level to temp dir
+  tmpdirname = tempfile.TemporaryDirectory()
+  csv_dir_name = tmpdirname.name
+
+  iso_mst = os.path.join(iso_dir.name, "root", "files", "mettlearms_gc.mst")
+  mst_extract.extract(iso_mst, csv_dir_name, False, PICK_LEVEL_CSV_FILE, False)
+
+  #load in csv file
+  with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'r') as pick_levels:
+    data = pick_levels.readlines()
+
+
+  level_name_index = FIRST_CSV_INDEX_LEVELS + NUM_LINES_PER_LEVEL * first_level_index
+  for level in metadata.levels:
+    if level["type"] != "campaign":
+      continue
+
+    #location index|
+    data[level_name_index] = f'{data[level_name_index].split("|")[0]}|{level["location"]}\n'
+    level_name_index += 1
+    #title index
+    data[level_name_index] = f'{data[level_name_index].split("|")[0]}|{level["title"]}\n'
+
+    level_name_index += NUM_LINES_PER_LEVEL
+
+  #write csv file
+  with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'w') as pick_levels:
+    pick_levels.writelines(data)
+
+  #rebuild csv file in place
+  csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + PICK_LEVEL_CSV_SUFFIX))
+
+  #move file to original
+  os.rename(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + PICK_LEVEL_CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
+
+  mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE)], "")
+
+def insert_mod(metadata, iso_dir, first_level_index, is_gc):
+  #add mod to pick level
+  update_pick_level(metadata, iso_dir, first_level_index, is_gc)
+
   #insert relevant files into the mst
   with zipfile.ZipFile(metadata.zip_file_path) as mod_zip:
     for info in mod_zip.infolist():

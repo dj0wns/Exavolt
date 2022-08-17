@@ -7,12 +7,15 @@ import lib.metadata_loader
 import lib.insert_mod
 
 def execute(input_iso, output_iso, mod_folder):
+  single_player_level_index = 0
+
   tmp_dir = lib.iso.extract_iso(input_iso)
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
-  print(len(mod_metadatas))
   for metadata in mod_metadatas:
-    print(metadata.summary())
-    lib.insert_mod.insert_mod(metadata, tmp_dir)
+    summary = metadata.summary()
+    print(summary)
+    lib.insert_mod.insert_mod(metadata, tmp_dir, single_player_level_index, True)
+    single_player_level_index += summary["Campaign Levels"]
   # copy over the corrected bi2.bin
   new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
   old_bi2 = os.path.join(tmp_dir.name,"root","sys","bi2.bin")
