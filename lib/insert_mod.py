@@ -7,75 +7,114 @@ import sys
 from .ma_tools import mst_extract
 from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
-from .level import CAMPAIGN_LEVEL_NAMES
+from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
 
-FIRST_CSV_INDEX_LEVELS = 6
+FIRST_SP_CSV_INDEX_LEVELS = 6
+FIRST_MP_CSV_INDEX_LEVELS = 8
 NUM_LINES_PER_LEVEL = 2
 
 PICK_LEVEL_CSV_FILE = "pick_level$.csv"
-PICK_LEVEL_CSV_SUFFIX = ".new"
+CSV_SUFFIX = ".new"
 
-def update_pick_level(metadata, iso_dir, first_level_index, is_gc):
-  #first extract pick level to temp dir
+MULTI_LEVEL_CSV_FILE = "multi_lvl$.csv"
+
+
+def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc):
+  #first extract pick level and multilvl to temp dir
   tmpdirname = tempfile.TemporaryDirectory()
   csv_dir_name = tmpdirname.name
 
   iso_mst = os.path.join(iso_dir.name, "root", "files", "mettlearms_gc.mst")
   mst_extract.extract(iso_mst, csv_dir_name, False, PICK_LEVEL_CSV_FILE, False)
+  mst_extract.extract(iso_mst, csv_dir_name, False, MULTI_LEVEL_CSV_FILE, False)
 
-  #load in csv file
+  #load in sp csv file
   with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'r') as pick_levels:
-    data = pick_levels.readlines()
+    sp_data = pick_levels.readlines()
 
+  #load in mp csv file
+  with open(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), 'r') as mp_levels:
+    mp_data = mp_levels.readlines()
 
-  level_name_index = FIRST_CSV_INDEX_LEVELS + NUM_LINES_PER_LEVEL * first_level_index
+  sp_level_name_index = FIRST_SP_CSV_INDEX_LEVELS + NUM_LINES_PER_LEVEL * first_sp_level_index
+  mp_level_name_index = FIRST_MP_CSV_INDEX_LEVELS + NUM_LINES_PER_LEVEL * first_mp_level_index
+  sp_edited = False
+  mp_edited = False
   for level in metadata.levels:
-    if level["type"] != "campaign":
-      continue
+    if level["type"] ==  LEVEL_TYPES[0]: #campaign
+      sp_edited = True
+      #location index
+      sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["location"]}\n'
+      sp_level_name_index += 1
+      #title index
+      sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["title"]}\n'
+      if "thumbnail" in level:
+        sp_level_name_index += 1
+        #thumbnail index
+        #convert row to comma segments
+        row = sp_data[sp_level_name_index].split(",")
+        row[1] = level["thumbnail"]
+        sp_data[sp_level_name_index] = ",".join(row)
+    else: #MP
+      mp_edited = True
+      #title index
+      mp_data[mp_level_name_index] = f'{mp_data[mp_level_name_index].split("|")[0]}|{level["title"]}\n'
+      if "thumbnail" in level:
+        mp_level_name_index += 1
+        #thumbnail index
+        #convert row to comma segments
+        row = mp_data[mp_level_name_index].split(",")
+        row[1] = level["thumbnail"]
+        mp_data[mp_level_name_index] = ",".join(row)
+      mp_level_name_index += 1
 
-    #location index|
-    data[level_name_index] = f'{data[level_name_index].split("|")[0]}|{level["location"]}\n'
-    level_name_index += 1
-    #title index
-    data[level_name_index] = f'{data[level_name_index].split("|")[0]}|{level["title"]}\n'
-    if "thumbnail" in level:
-      level_name_index += 1
-      #thumbnail index
-      #convert row to comma segments
-      row = data[level_name_index].split(",")
-      row[1] = level["thumbnail"]
-      data[level_name_index] = ",".join(row)
+  to_insert = []
 
-    level_name_index += NUM_LINES_PER_LEVEL
+  if sp_edited:
+    #write sp csv file
+    with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'w') as pick_levels:
+      pick_levels.writelines(sp_data)
 
-  #write csv file
-  with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'w') as pick_levels:
-    pick_levels.writelines(data)
+    csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX))
+    os.rename(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
+    to_insert.append(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
 
-  #rebuild csv file in place
-  csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + PICK_LEVEL_CSV_SUFFIX))
+  if mp_edited:
+    #write mp csv file
+    with open(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), 'w') as mp_levels:
+      mp_levels.writelines(mp_data)
 
-  #move file to original
-  os.rename(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + PICK_LEVEL_CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
+    csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX))
+    os.rename(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
+    to_insert.append(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
 
-  mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE)], "")
+  if len(to_insert):
+    mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_level_index, is_gc):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc):
   #add mod to pick level
   if len(metadata.levels):
-    update_pick_level(metadata, iso_dir, first_level_index, is_gc)
+    update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
 
   # map of files that get replaced, usually level names
   replacement_map = {}
-  level_index = first_level_index
+  sp_level_index = first_sp_level_index
+  mp_level_index = first_mp_level_index
   for level in metadata.levels:
+    if level['type'] == LEVEL_TYPES[0]: #campaign
+      level_list = CAMPAIGN_LEVEL_NAMES
+      level_index = sp_level_index
+      sp_level_index += 1
+    else:
+      level_list = MULTIPLAYER_LEVEL_NAMES
+      level_index = mp_level_index
+      mp_level_index += 1
     if 'wld' in level:
-      replacement_map[level['wld']] = f"{CAMPAIGN_LEVEL_NAMES[level_index]}.wld"
+      replacement_map[level['wld']] = f"{level_list[level_index]}.wld"
     if 'csv' in level:
-      replacement_map[level['csv']] = f"{CAMPAIGN_LEVEL_NAMES[level_index]}.csv"
+      replacement_map[level['csv']] = f"{level_list[level_index]}.csv"
     if 'gt' in level:
-      replacement_map[level['gt']] = f"{CAMPAIGN_LEVEL_NAMES[level_index]}.gt"
-    level_index += 1
+      replacement_map[level['gt']] = f"{level_list[level_index]}.gt"
 
   #insert relevant files into the mst
   with zipfile.ZipFile(metadata.zip_file_path) as mod_zip:

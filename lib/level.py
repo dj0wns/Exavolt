@@ -48,3 +48,20 @@ CAMPAIGN_LEVEL_NAMES = [
   "wesrrepair1",
   "wesccorros1",
 ]
+
+MULTIPLAYER_LEVEL_NAMES = [
+  "we01multi01",
+  "we02multi02",
+  "we03multi03",
+  "we04multi04",
+  "we05multi05",
+  "we06multi06",
+  "we07multi07",
+  "we08multi08",
+  "we09multi09",
+  "we10multi10",
+  "we11multi11",
+  "we12multi12",
+  "we14multi14",
+  "we15multi15",
+]
