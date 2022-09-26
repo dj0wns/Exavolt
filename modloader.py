@@ -32,8 +32,10 @@ def execute(input_iso, output_iso, mod_folder):
 
   # copy over the corrected bi2.bin
   new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
-  old_bi2 = os.path.join(tmp_dir.name,"root/sys/bi2.bin")
+  old_bi2 = os.path.join(tmp_dir.name,"root", "sys", "bi2.bin")
   shutil.copy(new_bi2, old_bi2)
+
+  #rebuild iso
   lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
 
 if __name__ == '__main__':
