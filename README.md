@@ -6,4 +6,4 @@
 ` git submodule update --init --recursive`  
 
 # Compiling a release
-`python -m PyInstaller -F modloader.py`
+`python -m PyInstaller -F modloader.py --add-data files\*;files`
