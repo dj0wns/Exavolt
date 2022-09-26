@@ -1,6 +1,7 @@
 import tempfile
 import zipfile
 import os
+import shutil
 import pathlib
 import sys
 
@@ -76,7 +77,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
       pick_levels.writelines(sp_data)
 
     csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX))
-    os.rename(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
+    shutil.move(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
     to_insert.append(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
 
   if mp_edited:
@@ -85,7 +86,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
       mp_levels.writelines(mp_data)
 
     csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX))
-    os.rename(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
+    shutil.move(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
     to_insert.append(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
 
   if len(to_insert):
@@ -136,7 +137,7 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
         for filename in path.iterdir():
           if os.path.basename(filename) in replacement_map:
             new_filename = os.path.join(os.path.split(filename)[0], replacement_map[os.path.basename(filename)])
-            os.rename(filename, new_filename)
+            shutil.move(filename, new_filename)
             filename = new_filename
           files_to_insert.append(filename)
 
@@ -151,5 +152,5 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
         file_path = os.path.join(tmpdirname.name, info.filename)
         new_filename = os.path.join(iso_dir.name, "root", "files", os.path.basename(info.filename))
         print(file_path, new_filename)
-        os.rename(file_path, new_filename)
+        shutil.move(file_path, new_filename)
 
