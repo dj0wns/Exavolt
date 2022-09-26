@@ -41,4 +41,4 @@ options:
 `mod_folder: "mods/"`  
 
 ## Compiling a release
-`python -m PyInstaller -F modloader.py --add-data files\*;files`
+`python -m PyInstaller -F modloader.py --add-data files\*;files --icon="icon.ico"`
