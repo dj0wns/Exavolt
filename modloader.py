@@ -5,19 +5,28 @@ import shutil
 import lib.iso
 import lib.metadata_loader
 import lib.insert_mod
+import lib.level
 
 def execute(input_iso, output_iso, mod_folder):
-  single_player_level_index = 0
-  multi_player_level_index = 0
+  sp_level_index = 0
+  mp_level_index = 0
 
   tmp_dir = lib.iso.extract_iso(input_iso)
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
   for metadata in mod_metadatas:
     summary = metadata.summary()
     print(summary)
-    lib.insert_mod.insert_mod(metadata, tmp_dir, single_player_level_index, multi_player_level_index, True)
-    single_player_level_index += summary["Campaign Levels"]
-    multi_player_level_index += summary["Multiplayer Levels"]
+    campaign_level_count = summary["Campaign Levels"]
+    mp_level_count = summary["Multiplayer Levels"]
+    if campaign_level_count + sp_level_index >= len(lib.level.CAMPAIGN_LEVEL_NAMES):
+      #Just skip mods if they have too many levels
+      continue
+    if mp_level_count + mp_level_index >= len(lib.level.MULTIPLAYER_LEVEL_NAMES):
+      #Just skip mods if they have too many levels
+      continue
+    lib.insert_mod.insert_mod(metadata, tmp_dir, sp_level_index, mp_level_index, True)
+    sp_level_index += campaign_level_count
+    mp_level_index += mp_level_count
 
   # copy over the corrected bi2.bin
   new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
