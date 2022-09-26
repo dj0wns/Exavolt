@@ -42,3 +42,7 @@ options:
 
 ## Compiling a release
 `python -m PyInstaller -F exavolt.py --add-data files\*;files --icon="icon.ico"`
+
+## Thanks
+
+Huge thanks to Vissova for the logo
