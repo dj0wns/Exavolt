@@ -1,7 +1,7 @@
 # Exavolt - The Metal Arms Mod Loader
 
 ## Where to get Binaries
-Download from [Releases](https://github.com/dj0wns/MetalArmsexavolt/releases)
+Download from [Releases](https://github.com/dj0wns/Exavolt/releases)
 
 ## Basic Usage
 1. Fill the `mods/` directory with zipfile mods (available in the metal arms modding discord: [https://discord.gg/3Dztwe6Wcy](https://discord.gg/3Dztwe6Wcy))
