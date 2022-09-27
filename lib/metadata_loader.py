@@ -44,6 +44,7 @@ class ModMetadata:
              "Author":self.author,
              "Campaign Levels":campaign_level_count,
              "Multiplayer Levels":mp_level_count,
+             "Hacks Required": self.hacks_required,
              "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
              "Path": self.zip_file_path}
 

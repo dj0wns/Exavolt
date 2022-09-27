@@ -8,18 +8,26 @@ import lib.iso
 import lib.metadata_loader
 import lib.insert_mod
 import lib.level
+import lib.dol
+import lib.hacks
 
 def execute(input_iso, output_iso, mod_folder):
   sp_level_index = 0
   mp_level_index = 0
+  hacks = set()
 
   tmp_dir = lib.iso.extract_iso(input_iso)
+  dol = os.path.join(tmp_dir.name,"root", "sys", "main.dol")
+
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
   for metadata in mod_metadatas:
     summary = metadata.summary()
     print(summary)
     campaign_level_count = summary["Campaign Levels"]
     mp_level_count = summary["Multiplayer Levels"]
+    #add hacks
+    for hack in summary["Hacks Required"]:
+      hacks.add(hack)
     if campaign_level_count + sp_level_index >= len(lib.level.CAMPAIGN_LEVEL_NAMES):
       #Just skip mods if they have too many levels
       continue
@@ -34,6 +42,11 @@ def execute(input_iso, output_iso, mod_folder):
   new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
   old_bi2 = os.path.join(tmp_dir.name,"root", "sys", "bi2.bin")
   shutil.copy(new_bi2, old_bi2)
+
+  #apply dol hacks
+  for hack in hacks:
+    print(f'Applying {hack}')
+    lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
 
   #rebuild iso
   lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir.name,"root"))
