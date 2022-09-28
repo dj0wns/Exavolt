@@ -143,9 +143,6 @@ class ModMetadata:
           if not isinstance(level['title'], str):
             raise ValueError('levels[' + str(index) + ']["title"]')
           new_level['title'] = level['title']
-        else:
-          # Required field
-          raise KeyError('levels[' + str(index) + ']["title"]')
 
         if "location" in level:
           if not isinstance(level['location'], str):
@@ -169,9 +166,6 @@ class ModMetadata:
           if not isinstance(level['csv'], str):
             raise ValueError('levels[' + str(index) + ']["csv"]')
           new_level['csv'] = level['csv']
-        else:
-          # Required field
-          raise KeyError('levels[' + str(index) + ']["csv"]')
 
         if "gt" in level:
           if not isinstance(level['gt'], str):

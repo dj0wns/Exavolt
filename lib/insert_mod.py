@@ -43,12 +43,17 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   mp_edited = False
   for level in metadata.levels:
     if level["type"] ==  LEVEL_TYPES[0]: #campaign
-      sp_edited = True
+      if "location" in level or "title" in level or "thumbnail" in level:
+        sp_edited = True
+      else:
+        continue
       #location index
-      sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["location"]}\n'
+      if "location" in level:
+        sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["location"]}\n'
       sp_level_name_index += 1
       #title index
-      sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["title"]}\n'
+      if "title" in level:
+        sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["title"]}\n'
       if "thumbnail" in level:
         sp_level_name_index += 1
         #thumbnail index
@@ -57,9 +62,13 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
         row[1] = level["thumbnail"]
         sp_data[sp_level_name_index] = ",".join(row)
     else: #MP
-      mp_edited = True
+      if "title" in level or "thumbnail" in level:
+        mp_edited = True
+      else:
+        continue
       #title index
-      mp_data[mp_level_name_index] = f'{mp_data[mp_level_name_index].split("|")[0]}|{level["title"]}\n'
+      if "title" in level:
+        mp_data[mp_level_name_index] = f'{mp_data[mp_level_name_index].split("|")[0]}|{level["title"]}\n'
       if "thumbnail" in level:
         mp_level_name_index += 1
         #thumbnail index
@@ -123,6 +132,7 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
       if os.path.splitext(info.filename)[1].lower() == ".mst":
         #extract the mst to a temp directory and insert the files
         tmpdirname = tempfile.TemporaryDirectory()
+        insert_file_dir = tempfile.TemporaryDirectory()
         mst_path = os.path.join(tmpdirname.name, info.filename)
         print(f'Extracting {info.filename} to {tmpdirname.name}')
         mod_zip.extract(info.filename, tmpdirname.name)
@@ -136,9 +146,11 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
 
         for filename in path.iterdir():
           if os.path.basename(filename) in replacement_map:
-            new_filename = os.path.join(os.path.split(filename)[0], replacement_map[os.path.basename(filename)])
-            shutil.move(filename, new_filename)
-            filename = new_filename
+            new_filename = os.path.join(insert_file_dir.name, replacement_map[os.path.basename(filename)])
+          else:
+            new_filename = os.path.join(insert_file_dir.name, os.path.basename(filename))
+          shutil.move(filename, new_filename)
+          filename = new_filename
           files_to_insert.append(filename)
 
         iso_mst = os.path.join(iso_dir.name, "root", "files", "mettlearms_gc.mst")

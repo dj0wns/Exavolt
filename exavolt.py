@@ -28,10 +28,10 @@ def execute(input_iso, output_iso, mod_folder):
     #add hacks
     for hack in summary["Hacks Required"]:
       hacks.add(hack)
-    if campaign_level_count + sp_level_index >= len(lib.level.CAMPAIGN_LEVEL_NAMES):
+    if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
       #Just skip mods if they have too many levels
       continue
-    if mp_level_count + mp_level_index >= len(lib.level.MULTIPLAYER_LEVEL_NAMES):
+    if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
       #Just skip mods if they have too many levels
       continue
     lib.insert_mod.insert_mod(metadata, tmp_dir, sp_level_index, mp_level_index, True)
