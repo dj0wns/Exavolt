@@ -2,17 +2,98 @@ import collections
 
 pack_int = '>i' #dols can only be big endian
 
-def parse_dol_table(dol):
+# all of these changes are need to update the stack fixups
+ntsc_dol_stack_lower_byte_offsets = [
+  0x8000332a, #where stack pointer is initially set
+  0x8033a57a,
+  0x8033f2a6,
+  0x8033f2b2,
+  0x8033f2a6, #unknown , points near stack thats all i know
+  0x8033f2b2, #another stack pointer, possible for zeroing
+]
+ntsc_dol_initial_stack_value = 0X804c2aa0
+ntsc_safe_new_section_start = 0x804c2b00
+stack_added_offset = 0x100
+
+#The names of the offsets in the dol
+offset_names = [
+  "Text0",
+  "Text1",
+  "Text2",
+  "Text3",
+  "Text4",
+  "Text5",
+  "Text6",
+  "Data0",
+  "Data1",
+  "Data2",
+  "Data3",
+  "Data4",
+  "Data5",
+  "Data6",
+  "Data7",
+  "Data8",
+  "Data9",
+  "Data10",
+]
+
+# ONLY CALL THIS FUNCTION ONCE, IT MAKES ASSUMPTIONS WHEN UPDATING THE STACK POINTER
+def modify_entry(dol, entry_name, file_start, size, memory_address):
+  if entry_name not in offset_names:
+    print(f"Invalid entry name: {entry_name}")
+    return
+  table = parse_dol_table(dol)
+  stack_ptrs = [get_file_from_memory_address(table,i) for i in ntsc_dol_stack_lower_byte_offsets]
+  # only support
+  if memory_address + size - (ntsc_dol_initial_stack_value & 0xffff0000) >= 0xd000:
+    print(f'Sector too large for currently supported data')
+    return
+  # lazily we only support the lower 16 bits for now, will fix later, requires overwriting the heading lis and is marginally more complex
+  new_stack_start = (memory_address + size + stack_added_offset - (ntsc_dol_initial_stack_value & 0xffff0000)) & 0xffff
+
+  index = offset_names.index(entry_name)
+  file_offset = 4 * index
+  memory_address_offset = 4 * index + 0x48
+  size_offset = 4 * index + 0x90
+  bytes_to_add = [i.to_bytes(1, byteorder='big') for i in range(size)]
+  print (hex(file_offset), hex(memory_address_offset), hex(size_offset))
+  with open(dol, "r+b") as dol_writer:
+    dol_writer.seek(file_offset)
+    dol_writer.write(file_start.to_bytes(4, byteorder='big'))
+    dol_writer.seek(memory_address_offset)
+    dol_writer.write(memory_address.to_bytes(4, byteorder='big'))
+    dol_writer.seek(size_offset)
+    dol_writer.write(size.to_bytes(4, byteorder='big'))
+    # Patch all relevant stack offset pointers we know about
+    for offset in stack_ptrs:
+      dol_writer.seek(offset)
+      dol_writer.write(new_stack_start.to_bytes(2, byteorder='big'))
+  with open(dol, "ab") as dol_writer:
+    for byte in bytes_to_add:
+      dol_writer.write(byte)
+
+def parse_dol_table(dol, debug = False):
   dol_table = {}
   dol_reader = open(dol, "rb")
-
   file_offsets = []
   memory_offsets = []
+  section_sizes = []
   # 7 text segments and 11 data segments
   for i in range(18):
     file_offsets.append(int.from_bytes(dol_reader.read(4), byteorder='big', signed=False))
   for i in range(18):
     memory_offsets.append(int.from_bytes(dol_reader.read(4), byteorder='big', signed=False))
+  for i in range(18):
+    section_sizes.append(int.from_bytes(dol_reader.read(4), byteorder='big', signed=False))
+
+  if (debug):
+    bss_address = int.from_bytes(dol_reader.read(4), byteorder='big', signed=False)
+    bss_size = int.from_bytes(dol_reader.read(4), byteorder='big', signed=False)
+    entry_point = int.from_bytes(dol_reader.read(4), byteorder='big', signed=False)
+    print(f"bss addr: {bss_address}({hex(bss_address)}), size: {bss_size}({hex(bss_size)})")
+    print(f"entry_point: {entry_point}({hex(entry_point)})")
+    for i in range(len(file_offsets)):
+      print(f"{offset_names[i]}: {file_offsets[i]}({hex(file_offsets[i])}) -> {memory_offsets[i]}({hex(memory_offsets[i])}), {section_sizes[i]}({hex(section_sizes[i])}) bytes, end: {section_sizes[i]+file_offsets[i]}({hex(section_sizes[i]+file_offsets[i])}) -> {section_sizes[i]+memory_offsets[i]}({hex(section_sizes[i]+memory_offsets[i])})")
 
   for i in range(len(memory_offsets)):
     dol_table[memory_offsets[i]] = file_offsets[i]
@@ -27,6 +108,16 @@ def get_file_from_memory_address(table, address):
   address -= memory_offset
   file_offset += address
   return file_offset
+
+def get_memory_from_file_address(table, address):
+  file_offset = -1
+  for k,v in table.items():
+    if v > file_offset and v < address:
+      file_offset = v
+      memory_offset = k
+  address -= file_offset
+  memory_offset += address
+  return memory_offset
 
 def apply_hack(dol, hack):
   dol_table = parse_dol_table(dol)
