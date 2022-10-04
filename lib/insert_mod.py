@@ -25,7 +25,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   tmpdirname = tempfile.TemporaryDirectory()
   csv_dir_name = tmpdirname.name
 
-  iso_mst = os.path.join(iso_dir.name, "root", "files", "mettlearms_gc.mst")
+  iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
   mst_extract.extract(iso_mst, csv_dir_name, False, PICK_LEVEL_CSV_FILE, False)
   mst_extract.extract(iso_mst, csv_dir_name, False, MULTI_LEVEL_CSV_FILE, False)
 
@@ -153,16 +153,16 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
           filename = new_filename
           files_to_insert.append(filename)
 
-        iso_mst = os.path.join(iso_dir.name, "root", "files", "mettlearms_gc.mst")
+        iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
         mst_insert.execute(True, iso_mst, files_to_insert, "")
 
       elif os.path.basename(info.filename).lower() != "manifest.json":
-        print(f'Extracting {info.filename} to {os.path.join(iso_dir.name, "root")}')
+        print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
         #first move to temporary directory and then copy to the right spot to dodge added folders
         tmpdirname = tempfile.TemporaryDirectory()
         mod_zip.extract(info.filename, tmpdirname.name)
         file_path = os.path.join(tmpdirname.name, info.filename)
-        new_filename = os.path.join(iso_dir.name, "root", "files", os.path.basename(info.filename))
+        new_filename = os.path.join(iso_dir, "root", "files", os.path.basename(info.filename))
         print(file_path, new_filename)
         shutil.move(file_path, new_filename)
 

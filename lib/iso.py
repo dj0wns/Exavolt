@@ -15,9 +15,9 @@ def extract_iso(input_iso, out_dir = ""):
   print(f'Extracting {input_iso} to {out_dir}')
   src = Path(input_iso).resolve()
   iso = GamecubeISO.from_iso(src)
-  iso.extract(out_dir)
+  iso.extract(out_dir, dumpPositions=False)
   if debug:
-    return None
+    return out_dir
   else:
     # preserve temporary directory by passing it back
     return tmpdir
@@ -27,4 +27,4 @@ def rebuild_iso(output_iso, iso_dir):
   print(f'Rebuilding {iso_dir} to {output_iso}')
   src = Path(iso_dir).resolve()
   iso = GamecubeISO.from_root(src)
-  iso.build(output_iso)
+  iso.build(output_iso, preCalc = False)
