@@ -65,7 +65,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
   #Pad iso to be divisible by 80 bytes
   file_stat = os.stat(os.path.abspath(output_iso))
   file_size = file_stat.st_size
-  bytes_to_add = (int(math.ceil(file_size / 80.0)) * 80) - file_size
+  # Always add 80 bytes for safety or something idk / maybe im having file size issues?
+  bytes_to_add = (int(math.ceil(file_size / 80.0)) * 80) - file_size + 80
   print(bytes_to_add)
   with open(os.path.abspath(output_iso), 'ab') as iso_file:
     iso_file.write(b'\x00' * bytes_to_add)
