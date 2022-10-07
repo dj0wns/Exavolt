@@ -1,3 +1,6 @@
 [submodule "DJs_MA_TOOLs"]
 	path = lib/ma_tools
 	url = https://github.com/dj0wns/DJs_MA_TOOLs
+[submodule "lib/pyiiasmh"]
+	path = lib/pyiiasmh
+	url = https://github.com/JoshuaMKW/pyiiasmh
