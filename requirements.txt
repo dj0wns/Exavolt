@@ -1,3 +1,4 @@
 bidict>=0.22.0
 jsonpickle>=2.2.0
 pyisotools>=2.4.5
+geckolibs>=0.2.3
