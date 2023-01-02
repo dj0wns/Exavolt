@@ -12,6 +12,13 @@ def collect_mods(folder):
       mod_metadatas.append(collect_mod_metadata(path))
   return mod_metadatas
 
+def collect_mods_from_files(files):
+  mod_metadatas = []
+  for file in files:
+    if file.endswith(".zip"):
+      mod_metadatas.append(collect_mod_metadata(file))
+  return mod_metadatas
+
 def collect_mod_metadata(zip_file_path):
   metadata = ModMetadata(zip_file_path)
   with zipfile.ZipFile(zip_file_path) as mod_zip:

@@ -12,7 +12,7 @@ import lib.level
 import lib.dol
 import lib.hacks
 
-def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
+def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   sp_level_index = 0
   mp_level_index = 0
   hacks = set()
@@ -28,7 +28,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
 
   dol = os.path.join(tmp_dir_name,"root", "sys", "main.dol")
 
-  mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+  if not len(files):
+    mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+  else:
+    mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
   for metadata in mod_metadatas:
     summary = metadata.summary()
     print(summary)
@@ -79,6 +82,7 @@ if __name__ == '__main__':
   parser.add_argument("mod_folder", help="Folder containing all mods which the user will have the option of adding", type=pathlib.Path, nargs='?', default='mods')
   parser.add_argument("-E", "--extract_only", help="Extracts the iso to a folder named [output_iso] and does no processing, useful for debugging", action='store_true')
   parser.add_argument("-N", "--no-rebuild", help="Extracts the iso to a folder named [output_iso] and adds mods but does not rebuild, useful for debugging", action='store_true')
+  parser.add_argument("-f", "--file", help="Manually named files to insert, disables usage of mod folder", action='append_const', const=str)
   args = parser.parse_args()
 
-  execute(args.input_iso, args.output_iso, args.mod_folder, args.extract_only, args.no_rebuild)
+  execute(args.input_iso, args.output_iso, args.mod_folder, args.extract_only, args.no_rebuild, args.file)
