@@ -28,7 +28,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
   dol = os.path.join(tmp_dir_name,"root", "sys", "main.dol")
 
-  if not len(files):
+  if files is None or not len(files):
     mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
   else:
     mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
