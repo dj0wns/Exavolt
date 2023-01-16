@@ -9,6 +9,7 @@ from .ma_tools import mst_extract
 from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
 from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
+from .dol import inject_assembly
 
 FIRST_SP_CSV_INDEX_LEVELS = 6
 FIRST_MP_CSV_INDEX_LEVELS = 8
@@ -101,10 +102,12 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   if len(to_insert):
     mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc):
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
+
+  assembly_files = [assembly_file["file"] for assembly_file in metadata.assembly_files]
 
   # map of files that get replaced, usually level names
   replacement_map = {}
@@ -157,12 +160,19 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is
         mst_insert.execute(True, iso_mst, files_to_insert, "")
 
       elif os.path.basename(info.filename).lower() != "manifest.json":
-        print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
-        #first move to temporary directory and then copy to the right spot to dodge added folders
-        tmpdirname = tempfile.TemporaryDirectory()
-        mod_zip.extract(info.filename, tmpdirname.name)
-        file_path = os.path.join(tmpdirname.name, info.filename)
-        new_filename = os.path.join(iso_dir, "root", "files", os.path.basename(info.filename))
-        print(file_path, new_filename)
-        shutil.move(file_path, new_filename)
+        if os.path.basename(info.filename) in assembly_files:
+          # this is an assembly file that needs to be injected into the dol not added to the iso
+          tmpdirname = tempfile.TemporaryDirectory()
+          mod_zip.extract(info.filename, tmpdirname.name)
+          file_path = os.path.join(tmpdirname.name, info.filename)
+          inject_assembly(dol, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
+        else:
+          print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
+          #first move to temporary directory and then copy to the right spot to dodge added folders
+          tmpdirname = tempfile.TemporaryDirectory()
+          mod_zip.extract(info.filename, tmpdirname.name)
+          file_path = os.path.join(tmpdirname.name, info.filename)
+          new_filename = os.path.join(iso_dir, "root", "files", os.path.basename(info.filename))
+          print(file_path, new_filename)
+          shutil.move(file_path, new_filename)
 

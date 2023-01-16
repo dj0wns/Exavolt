@@ -16,6 +16,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
   sp_level_index = 0
   mp_level_index = 0
   hacks = set()
+  assembly_files = set()
 
   if extract_only or no_rebuild:
     tmp_dir_name = lib.iso.extract_iso(input_iso, str(output_iso))
@@ -30,6 +31,17 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
 
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
   for metadata in mod_metadatas:
+    # see if there are any assembly injections, if so need to expand the dol
+    if metadata.assembly_files:
+      # 42000 bytes is the current maximum we can expand by
+      print("Updating dol table from:")
+      lib.dol.parse_dol_table(dol, True)
+      lib.dol.modify_entry(dol, "Data8", 0x3ffe80, 0xff, 0x804c2a20)
+      print("Updating dol table to:")
+      lib.dol.parse_dol_table(dol, True)
+      break
+
+  for metadata in mod_metadatas:
     summary = metadata.summary()
     print(summary)
     campaign_level_count = summary["Campaign Levels"]
@@ -43,7 +55,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
     if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
       #Just skip mods if they have too many levels
       continue
-    lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, True)
+    lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True)
     sp_level_index += campaign_level_count
     mp_level_index += mp_level_count
 
