@@ -36,7 +36,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
       # 42000 bytes is the current maximum we can expand by
       print("Updating dol table from:")
       lib.dol.parse_dol_table(dol, True)
-      lib.dol.modify_entry(dol, "Data8", 0x3ffe80, 0xff, 0x804c2a20)
+      lib.dol.add_code_section(dol)
       print("Updating dol table to:")
       lib.dol.parse_dol_table(dol, True)
       break

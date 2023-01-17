@@ -4,15 +4,6 @@ from lib.assembly import assemble_code_to_bytes, get_jump_instruction
 
 pack_int = '>i' #dols can only be big endian
 
-# all of these changes are need to update the stack fixups
-ntsc_dol_stack_lower_byte_offsets = [
-  0x8000332a, #where stack pointer is initially set
-  0x8033a57a,
-  0x8033f2a6,
-  0x8033f2b2,
-  0x8033f2a6, #unknown , points near stack thats all i know
-  0x8033f2b2, #another stack pointer, possible for zeroing
-]
 ntsc_dol_initial_stack_value = 0X804c2aa0
 ntsc_safe_new_section_start = 0x804c2b00
 stack_added_offset = 0xa0 # this is probably due to a flaw in pointers, investigate
@@ -43,34 +34,37 @@ offset_names = [
   "Data10",
 ]
 
-# ONLY CALL THIS FUNCTION ONCE, IT MAKES ASSUMPTIONS WHEN UPDATING THE STACK POINTER
+def add_code_section(dol):
+  # we are going to add a large code block between the heap and the stack. The
+  # initial heap allocation is 11.5 MB, so since its a 24 mb system it must be
+  # leaving at most 13 MB to the stack so lets start our code section at +15MB
+  # past 0x8000000. Give it 1 MB for code which is a lot, can extend later if
+  # needed.
+  megabyte = 1024*1024
+  data_start = 0x80000000 + 15 * megabyte
+  data_size = 640
+  modify_entry(dol, "Data8", 0x3ffe80, data_size, data_start)
+
 def modify_entry(dol, entry_name, file_start, size, memory_address):
   if entry_name not in offset_names:
     print(f"Invalid entry name: {entry_name}")
     return
   table = parse_dol_table(dol)
-  stack_ptrs = [get_file_from_memory_address(table,i) for i in ntsc_dol_stack_lower_byte_offsets]
-  # only support
-  if memory_address + size - (ntsc_dol_initial_stack_value & 0xffff0000) >= 0xd000:
-    print(f'Sector too large for currently supported data')
-    return
-  # lazily we only support the lower 16 bits for now, will fix later, requires overwriting the heading lis and is marginally more complex
-  new_stack_start = (memory_address + size + stack_added_offset - (ntsc_dol_initial_stack_value & 0xffff0000)) & 0xffff
 
   # update globals to keep written state
   global next_code_injection_offset
   global next_code_injection_virtual_offset
   global code_injection_max_offset
-  next_code_injection_offset = file_start + stack_added_offset
+  next_code_injection_offset = file_start
   code_injection_max_offset = memory_address + size
-  next_code_injection_virtual_offset = memory_address + stack_added_offset
+  next_code_injection_virtual_offset = memory_address
 
   index = offset_names.index(entry_name)
   file_offset = 4 * index
   memory_address_offset = 4 * index + 0x48
   size_offset = 4 * index + 0x90
   print(size)
-  bytes_to_add = [i.to_bytes(1, byteorder='big') for i in range(size)]
+  bytes_to_add = [int(0).to_bytes(1, byteorder='big') for i in range(size)]
   print (hex(file_offset), hex(memory_address_offset), hex(size_offset))
   with open(dol, "r+b") as dol_writer:
     dol_writer.seek(file_offset)
@@ -79,10 +73,6 @@ def modify_entry(dol, entry_name, file_start, size, memory_address):
     dol_writer.write(memory_address.to_bytes(4, byteorder='big'))
     dol_writer.seek(size_offset)
     dol_writer.write(size.to_bytes(4, byteorder='big'))
-    # Patch all relevant stack offset pointers we know about
-    for offset in stack_ptrs:
-      dol_writer.seek(offset)
-      dol_writer.write(new_stack_start.to_bytes(2, byteorder='big'))
   with open(dol, "ab") as dol_writer:
     for byte in bytes_to_add:
       dol_writer.write(byte)
