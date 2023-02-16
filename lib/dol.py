@@ -41,8 +41,9 @@ def add_code_section(dol):
   # past 0x8000000. Give it 1 MB for code which is a lot, can extend later if
   # needed.
   megabyte = 1024*1024
-  data_start = 0x80000000 + 15 * megabyte
-  data_size = 640
+  #data_start = 0x80000000 + 15 * megabyte
+  data_start = 0x804b7ca0
+  data_size = 100000
   modify_entry(dol, "Data8", 0x3ffe80, data_size, data_start)
 
 def modify_entry(dol, entry_name, file_start, size, memory_address):
@@ -59,10 +60,13 @@ def modify_entry(dol, entry_name, file_start, size, memory_address):
   code_injection_max_offset = memory_address + size
   next_code_injection_virtual_offset = memory_address
 
+  dol_table = parse_dol_table(dol)
+
   index = offset_names.index(entry_name)
   file_offset = 4 * index
   memory_address_offset = 4 * index + 0x48
   size_offset = 4 * index + 0x90
+  bss_size_offset = 0xdc
   print(size)
   bytes_to_add = [int(0).to_bytes(1, byteorder='big') for i in range(size)]
   print (hex(file_offset), hex(memory_address_offset), hex(size_offset))
@@ -73,6 +77,11 @@ def modify_entry(dol, entry_name, file_start, size, memory_address):
     dol_writer.write(memory_address.to_bytes(4, byteorder='big'))
     dol_writer.seek(size_offset)
     dol_writer.write(size.to_bytes(4, byteorder='big'))
+
+    dol_writer.seek(bss_size_offset)
+    bss_size = int.from_bytes(dol_writer.read(4), byteorder='big', signed=False)
+    dol_writer.seek(bss_size_offset)
+    dol_writer.write((size + bss_size).to_bytes(4, byteorder='big'))
   with open(dol, "ab") as dol_writer:
     for byte in bytes_to_add:
       dol_writer.write(byte)
