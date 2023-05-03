@@ -4,6 +4,8 @@ import os
 import shutil
 import pathlib
 import math
+import sys
+import traceback
 
 import lib.iso
 import lib.metadata_loader
@@ -12,68 +14,102 @@ import lib.level
 import lib.dol
 import lib.hacks
 
+class IsoExtractionException(Exception):
+    def __init__(self,
+                 msg="Error occured with iso extraction, verify that the .iso file is a Metal Arms NTSC unmodified iso (not nkit.iso or .ciso) and that it is on the same system drive as Exavolt",
+                 *args,
+                 **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
+class ModInsertionException(Exception):
+    def __init__(self,
+                 msg="Error inserting mods, verify that all mods are valid and try again.",
+                 *args,
+                 **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
+class IsoRebuildException(Exception):
+    def __init__(self,
+                 msg="Error rebuilding iso, verify that you have enough free space and that the input iso and mods are valid",
+                 *args,
+                 **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
 def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   sp_level_index = 0
   mp_level_index = 0
   hacks = set()
 
-  if extract_only or no_rebuild:
-    tmp_dir_name = lib.iso.extract_iso(input_iso, str(output_iso))
-    if extract_only:
+  try:
+    if extract_only or no_rebuild:
+      tmp_dir_name = lib.iso.extract_iso(input_iso, str(output_iso))
+      if extract_only:
+        return
+    else:
+      tmp_dir = lib.iso.extract_iso(input_iso)
+      tmp_dir_name = tmp_dir.name
+    dol = os.path.join(tmp_dir_name,"root", "sys", "main.dol")
+  except Exception:
+    raise IsoExtractionException()
+
+  try:
+    if files is None or not len(files):
+      mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+    else:
+      mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
+    for metadata in mod_metadatas:
+      summary = metadata.summary()
+      print(summary)
+      campaign_level_count = summary["Campaign Levels"]
+      mp_level_count = summary["Multiplayer Levels"]
+      #add hacks
+      for hack in summary["Hacks Required"]:
+        hacks.add(hack)
+      if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
+        #Just skip mods if they have too many levels
+        continue
+      if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
+        #Just skip mods if they have too many levels
+        continue
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, True)
+      sp_level_index += campaign_level_count
+      mp_level_index += mp_level_count
+  except Exception:
+    raise ModInsertionException()
+
+
+  try:
+    # copy over the corrected bi2.bin
+    new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
+    old_bi2 = os.path.join(tmp_dir_name,"root", "sys", "bi2.bin")
+    shutil.copy(new_bi2, old_bi2)
+  except Exception:
+    raise ValueError("Error modifying bi2.bin")
+
+  try:
+    #apply dol hacks
+    for hack in hacks:
+      print(f'Applying {hack}')
+      lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
+  except Exception:
+    raise ValueError("Error applying dol hacks")
+
+  try:
+    if no_rebuild:
       return
-  else:
-    tmp_dir = lib.iso.extract_iso(input_iso)
-    tmp_dir_name = tmp_dir.name
+    #rebuild iso
+    lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir_name,"root"))
 
-
-  dol = os.path.join(tmp_dir_name,"root", "sys", "main.dol")
-
-  if files is None or not len(files):
-    mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
-  else:
-    mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
-  for metadata in mod_metadatas:
-    summary = metadata.summary()
-    print(summary)
-    campaign_level_count = summary["Campaign Levels"]
-    mp_level_count = summary["Multiplayer Levels"]
-    #add hacks
-    for hack in summary["Hacks Required"]:
-      hacks.add(hack)
-    if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
-      #Just skip mods if they have too many levels
-      continue
-    if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
-      #Just skip mods if they have too many levels
-      continue
-    lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, True)
-    sp_level_index += campaign_level_count
-    mp_level_index += mp_level_count
-
-  # copy over the corrected bi2.bin
-  new_bi2 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files", "bi2.bin")
-  old_bi2 = os.path.join(tmp_dir_name,"root", "sys", "bi2.bin")
-  shutil.copy(new_bi2, old_bi2)
-
-  #apply dol hacks
-  for hack in hacks:
-    print(f'Applying {hack}')
-    lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
-
-  if no_rebuild:
-    return
-  #rebuild iso
-  lib.iso.rebuild_iso(os.path.abspath(output_iso), os.path.join(tmp_dir_name,"root"))
-
-  #Pad iso to be divisible by 80 bytes
-  file_stat = os.stat(os.path.abspath(output_iso))
-  file_size = file_stat.st_size
-  # Always add 80 bytes for safety or something idk / maybe im having file size issues?
-  bytes_to_add = (int(math.ceil(file_size / 80.0)) * 80) - file_size + 80
-  print(bytes_to_add)
-  with open(os.path.abspath(output_iso), 'ab') as iso_file:
-    iso_file.write(b'\x00' * bytes_to_add)
-
+    #Pad iso to be divisible by 80 bytes
+    file_stat = os.stat(os.path.abspath(output_iso))
+    file_size = file_stat.st_size
+    # Always add 80 bytes for safety or something idk / maybe im having file size issues?
+    bytes_to_add = (int(math.ceil(file_size / 80.0)) * 80) - file_size + 80
+    print(bytes_to_add)
+    with open(os.path.abspath(output_iso), 'ab') as iso_file:
+      iso_file.write(b'\x00' * bytes_to_add)
+  except Exception:
+    raise IsoRebuildException()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Add mods to Metal Arms ISO file")
@@ -85,4 +121,12 @@ if __name__ == '__main__':
   parser.add_argument("-f", "--file", help="Manually named files to insert, disables usage of mod folder", action='append_const', const=str)
   args = parser.parse_args()
 
-  execute(args.input_iso, args.output_iso, args.mod_folder, args.extract_only, args.no_rebuild, args.file)
+  try:
+    execute(args.input_iso, args.output_iso, args.mod_folder, args.extract_only, args.no_rebuild, args.file)
+    print("Success! Press <Enter> to continue...")
+  except Exception:
+    print(sys.exc_info()[0])
+    print(traceback.format_exc())
+    print("Error, press <Enter> to continue...")
+  finally:
+    input()
