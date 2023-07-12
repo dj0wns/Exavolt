@@ -112,10 +112,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise IsoRebuildException()
 
 if __name__ == '__main__':
+  root_path = pathlib.Path(__file__).resolve().parent
   parser = argparse.ArgumentParser(description="Add mods to Metal Arms ISO file")
-  parser.add_argument("input_iso", help="A valid vanilla Metal Arms Iso File", type=pathlib.Path, nargs='?', default='metalarms.iso')
-  parser.add_argument("output_iso", help="Name of the new output iso which will be produced", type=pathlib.Path, nargs='?', default='mod.iso')
-  parser.add_argument("mod_folder", help="Folder containing all mods which the user will have the option of adding", type=pathlib.Path, nargs='?', default=pathlib.Path("mods").absolute())
+  parser.add_argument("input_iso", help="A valid vanilla Metal Arms Iso File", type=pathlib.Path, nargs='?', default=root_path / "metalarms.iso")
+  parser.add_argument("output_iso", help="Name of the new output iso which will be produced", type=pathlib.Path, nargs='?', default=root_path / 'mod.iso')
+  parser.add_argument("mod_folder", help="Folder containing all mods which the user will have the option of adding", type=pathlib.Path, nargs='?', default=root_path / "mods")
   parser.add_argument("-E", "--extract_only", help="Extracts the iso to a folder named [output_iso] and does no processing, useful for debugging", action='store_true')
   parser.add_argument("-N", "--no-rebuild", help="Extracts the iso to a folder named [output_iso] and adds mods but does not rebuild, useful for debugging", action='store_true')
   parser.add_argument("-f", "--file", help="Manually named files to insert, disables usage of mod folder", action='append_const', const=str)
