@@ -112,7 +112,12 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise IsoRebuildException()
 
 if __name__ == '__main__':
-  root_path = pathlib.Path(__file__).resolve().parent
+  if getattr(sys, 'frozen', False):
+    # if running in a frozen exe
+    root_path = pathlib.Path(sys.executable).resolve().parent
+  else:
+    root_path = pathlib.Path(__file__).resolve().parent
+
   parser = argparse.ArgumentParser(description="Add mods to Metal Arms ISO file")
   parser.add_argument("input_iso", help="A valid vanilla Metal Arms Iso File", type=pathlib.Path, nargs='?', default=root_path / "metalarms.iso")
   parser.add_argument("output_iso", help="Name of the new output iso which will be produced", type=pathlib.Path, nargs='?', default=root_path / 'mod.iso')
