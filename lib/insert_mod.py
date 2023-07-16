@@ -165,7 +165,8 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
           tmpdirname = tempfile.TemporaryDirectory()
           mod_zip.extract(info.filename, tmpdirname.name)
           file_path = os.path.join(tmpdirname.name, info.filename)
-          inject_assembly(dol, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
+          # DISABLED FOR NOW
+          #inject_assembly(dol, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
         else:
           print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
           #first move to temporary directory and then copy to the right spot to dodge added folders

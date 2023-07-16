@@ -39,6 +39,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
       lib.dol.add_code_section(dol)
       print("Updating dol table to:")
       lib.dol.parse_dol_table(dol, True)
+      # now insert the code injector loader code
+      lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjector.asm"), 0x80003258)
       break
 
   for metadata in mod_metadatas:
