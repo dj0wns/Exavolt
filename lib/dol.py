@@ -41,9 +41,8 @@ def add_code_section(dol):
   # past 0x8000000. Give it 1 MB for code which is a lot, can extend later if
   # needed.
   megabyte = 1024*1024
-  #data_start = 0x80000000 + 15 * megabyte
-  data_start = 0x804b7ca0
-  data_size = 100000
+  data_start = 0x80000000 + 15 * megabyte
+  data_size = 640
   modify_entry(dol, "Data8", 0x3ffe80, data_size, data_start)
 
 def modify_entry(dol, entry_name, file_start, size, memory_address):
