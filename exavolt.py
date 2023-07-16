@@ -11,6 +11,9 @@ import lib.insert_mod
 import lib.level
 import lib.dol
 import lib.hacks
+import lib.ma_tools.mst_insert
+
+CODES_FILE="codes.bin"
 
 def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
   sp_level_index = 0
@@ -30,10 +33,12 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
   dol = os.path.join(tmp_dir_name,"root", "sys", "main.dol")
 
   mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+  has_assembly_files = False
   for metadata in mod_metadatas:
     # see if there are any assembly injections, if so need to expand the dol
     if metadata.assembly_files:
-      # 42000 bytes is the current maximum we can expand by
+      has_assembly_files = True
+      # 640 bytes is the current maximum we can expand by
       print("Updating dol table from:")
       lib.dol.parse_dol_table(dol, True)
       lib.dol.add_code_section(dol)
@@ -41,6 +46,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
       lib.dol.parse_dol_table(dol, True)
       # now insert the code injector loader code
       lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjector.asm"), 0x80003258)
+
+      # Now touch the codes.bin file
+      codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
+      pathlib.Path(codes_file_location).touch()
       break
 
   for metadata in mod_metadatas:
@@ -57,7 +66,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
     if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
       #Just skip mods if they have too many levels
       continue
-    lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True)
+    lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location)
     sp_level_index += campaign_level_count
     mp_level_index += mp_level_count
 
@@ -70,6 +79,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild):
   for hack in hacks:
     print(f'Applying {hack}')
     lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
+
+  # if there are assembly files then insert the codes.bin file
+  if has_assembly_files:
+    iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
+    lib.ma_tools.mst_insert.execute(True, iso_mst, [codes_file_location], "")
 
   if no_rebuild:
     return

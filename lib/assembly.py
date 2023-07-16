@@ -1,4 +1,5 @@
 import tempfile
+import struct
 from pathlib import Path
 from lib.pyiiasmh.ppctools import PpcFormatter
 
@@ -26,3 +27,11 @@ def get_jump_instruction(start, end):
     # jump forwards
     return 0x48000000 | (jump_distance & 0x00ffffff)
 
+def insert_assembly_into_codes_file(codes_file_location, file, address):
+  bytes = assemble_code_to_bytes(file)
+
+  # now inject the code into the dol
+  with open(codes_file_location, "r+b") as dol_writer:
+    dol_writer.write(struct.pack(">I", len(bytes)))
+    dol_writer.write(struct.pack(">I", address))
+    dol_writer.write(bytes)

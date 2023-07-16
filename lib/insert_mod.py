@@ -9,7 +9,7 @@ from .ma_tools import mst_extract
 from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
 from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
-from .dol import inject_assembly
+from .assembly import insert_assembly_into_codes_file
 
 FIRST_SP_CSV_INDEX_LEVELS = 6
 FIRST_MP_CSV_INDEX_LEVELS = 8
@@ -102,7 +102,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   if len(to_insert):
     mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location):
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
@@ -166,7 +166,7 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
           mod_zip.extract(info.filename, tmpdirname.name)
           file_path = os.path.join(tmpdirname.name, info.filename)
           # DISABLED FOR NOW
-          #inject_assembly(dol, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
+          insert_assembly_into_codes_file(codes_file_location, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
         else:
           print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
           #first move to temporary directory and then copy to the right spot to dodge added folders
