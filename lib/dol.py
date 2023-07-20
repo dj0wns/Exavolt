@@ -4,10 +4,6 @@ from lib.assembly import assemble_code_to_bytes, get_jump_instruction
 
 pack_int = '>i' #dols can only be big endian
 
-ntsc_dol_initial_stack_value = 0X804c2aa0
-ntsc_safe_new_section_start = 0x804c2b00
-stack_added_offset = 0xa0 # this is probably due to a flaw in pointers, investigate
-
 next_code_injection_offset = -1
 next_code_injection_virtual_offset = -1
 code_injection_max_offset = -1
@@ -38,8 +34,7 @@ def add_code_section(dol):
   # we are going to add a large code block between the heap and the stack. The
   # initial heap allocation is 11.5 MB, so since its a 24 mb system it must be
   # leaving at most 13 MB to the stack so lets start our code section at +15MB
-  # past 0x8000000. Give it 1 MB for code which is a lot, can extend later if
-  # needed.
+  # past 0x8000000. Give it the maximum of 640 bytes.
   megabyte = 1024*1024
   data_start = 0x80000000 + 15 * megabyte
   data_size = 640
