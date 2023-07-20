@@ -13,6 +13,9 @@ import lib.insert_mod
 import lib.level
 import lib.dol
 import lib.hacks
+import lib.ma_tools.mst_insert
+
+CODES_FILE="codes.bin"
 
 class IsoExtractionException(Exception):
     def __init__(self,
@@ -39,6 +42,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   sp_level_index = 0
   mp_level_index = 0
   hacks = set()
+  assembly_files = set()
 
   try:
     if extract_only or no_rebuild:
@@ -52,11 +56,31 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   except Exception:
     raise IsoExtractionException()
 
+  has_assembly_files = False
   try:
     if files is None or not len(files):
       mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
     else:
       mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
+
+    for metadata in mod_metadatas:
+      # see if there are any assembly injections, if so need to expand the dol
+      if metadata.assembly_files:
+        has_assembly_files = True
+        # 640 bytes is the current maximum we can expand by
+        print("Updating dol table from:")
+        lib.dol.parse_dol_table(dol, True)
+        lib.dol.add_code_section(dol)
+        print("Updating dol table to:")
+        lib.dol.parse_dol_table(dol, True)
+        # now insert the code injector loader code
+        lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjector.asm"), 0x80003258)
+
+        # Now touch the codes.bin file
+        codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
+        pathlib.Path(codes_file_location).touch()
+        break
+
     for metadata in mod_metadatas:
       summary = metadata.summary()
       print(summary)
@@ -71,7 +95,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
         #Just skip mods if they have too many levels
         continue
-      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, True)
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location)
       sp_level_index += campaign_level_count
       mp_level_index += mp_level_count
   except Exception:
@@ -93,6 +117,14 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
   except Exception:
     raise ValueError("Error applying dol hacks")
+
+  try:
+    # if there are assembly files then insert the codes.bin file
+    if has_assembly_files:
+      iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
+      lib.ma_tools.mst_insert.execute(True, iso_mst, [codes_file_location], "")
+  except Exception:
+    raise ValueError("Error assembling assembly models")
 
   try:
     if no_rebuild:

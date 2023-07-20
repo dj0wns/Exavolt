@@ -38,6 +38,7 @@ class ModMetadata:
     self.levels = []
     self.other_mst_files = []
     self.non_mst_files = []
+    self.assembly_files = []
 
   def summary(self):
     campaign_level_count = 0;
@@ -52,6 +53,7 @@ class ModMetadata:
              "Campaign Levels":campaign_level_count,
              "Multiplayer Levels":mp_level_count,
              "Hacks Required": self.hacks_required,
+             "Assembly Files": self.assembly_files,
              "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
              "Path": self.zip_file_path}
 
@@ -71,6 +73,9 @@ class ModMetadata:
     retstring += f'Non MST Files:\n'
     for non_mst_file in self.non_mst_files:
       retstring += f'\t{non_mst_file}\n'
+    retstring += f'Assembly Files:\n'
+    for assembly_file in self.assembly_files:
+      retstring += f'\t{assembly_file}\n'
     return retstring
 
   def from_json(self, json_file):
@@ -125,6 +130,36 @@ class ModMetadata:
         if not isinstance(non_mst_file, str):
           raise ValueError('non_mst_files[' + str(index) + ']')
         self.non_mst_files.append(non_mst_file)
+        index += 1
+
+    self.assembly_files = []
+    if "assembly_files" in mod_dict:
+      if not isinstance(mod_dict['assembly_files'], list):
+        raise ValueError('assembly_files')
+      index = 0
+      for assembly_file in mod_dict['assembly_files']:
+        new_assembly_file = {}
+        if not isinstance(assembly_file, dict):
+          raise ValueError('assembly_files[' + str(index) + ']')
+        if "file" in assembly_file:
+          if not isinstance(assembly_file['file'], str):
+            raise ValueError('assembly_files[' + str(index) + ']["file"]')
+          new_assembly_file["file"] = assembly_file["file"]
+        else:
+          # Required field
+          raise KeyError('assembly_files[' + str(index) + ']["file"]')
+        if "injection_location" in assembly_file:
+          if not isinstance(assembly_file['injection_location'], str):
+            raise ValueError('assembly_files[' + str(index) + ']["injection_location"]')
+          try:
+            assembly_int_location = int(assembly_file['injection_location'], 16)
+          except ValueError:
+            raise ValueError('assembly_files[' + str(index) + ']["injection_location"] must be of the form 0x80xxxxxx')
+          new_assembly_file["injection_location"] = assembly_int_location
+        else:
+          # Required field
+          raise KeyError('injection_location[' + str(index) + ']["injection_location"]')
+        self.assembly_files.append(new_assembly_file)
         index += 1
 
     self.levels = []
