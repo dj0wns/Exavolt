@@ -36,7 +36,7 @@ options:
 `mod_folder: "mods/"`  
 
 ## Compiling a release
-`python -m PyInstaller -F exavolt.py --add-data files\*;files --icon="icon.ico"`
+`python -m PyInstaller -F exavolt.py --add-data files\*;files --add-data lib\pyiiasmh\lib\win32\*;lib\win32 --add-data asm\*;asm --add-data lib\pyiiasmh\__includes.s;. --icon="icon.ico"`
 
 ## Thanks
 
