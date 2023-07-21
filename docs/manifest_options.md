@@ -4,9 +4,9 @@
 | ---------- | ---- | ----- |
 | title | String | [REQUIRED] Title of your mod |
 | author | String | [REQUIRED] Author's name |
-| hacks\_required | list(Hack) | See lib/hacks for the list |
-| other\_mst\_files | list(file\_paths) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
-| non\_mst\_files | list(file\_paths) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
+| hacks\_required | list(Hack) | See lib/hacks.py for the list |
+| other\_mst\_files | list(String) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
+| non\_mst\_files | list(String) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
 | assembly\_files | list(ASSEMBLY\_FILE) | Assembly files included with the mod to be inserted into the dol. See ASSEMBLY\_FILE table below for more details |
 | levels | list(LEVEL) | Any levels your mod contains. See LEVEL table below for more details |
 
@@ -18,7 +18,7 @@
 | type | String | [REQUIRED] Refer to lib/level.py::LEVEL_TYPES |
 | title | String | Level title, used in the game menu selection |
 | location | String | Level locations, used in the game menu selection |
-| thumbnail | file\_path | Level thumbnail, used in the game menu selection |
+| thumbnail | String | Level thumbnail, used in the game menu selection |
 | wld | String | [REQUIRED] Name of level wld file |
 | csv | String | Name of the level csv file |
 | gt | String | Name of the level gt file |
