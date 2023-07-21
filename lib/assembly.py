@@ -27,11 +27,51 @@ def get_jump_instruction(start, end):
     # jump forwards
     return 0x48000000 | (jump_distance & 0x00ffffff)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address):
-  bytes = assemble_code_to_bytes(file)
-
+def insert_bytes_into_codes_file(codes_file_location, bytes, address):
   # now inject the code into the dol
-  with open(codes_file_location, "r+b") as dol_writer:
+  with open(codes_file_location, "ab") as dol_writer:
     dol_writer.write(struct.pack(">I", len(bytes)))
     dol_writer.write(struct.pack(">I", address))
     dol_writer.write(bytes)
+
+def insert_assembly_into_codes_file(codes_file_location, file, address):
+  bytes = assemble_code_to_bytes(file)
+  insert_bytes_into_codes_file(codes_file_location, bytes, address)
+
+def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index):
+  level_switch_code = f"""
+ ####### LEVEL BYPASS CODES ######
+
+ lis r12, 0x804b # Level index offset
+ ori r12, r12, 0x891c
+ lwz r12, 0(r12)
+ cmpwi r12, {level_index}
+ beq CODE_BLOCK_EXAVOLT_UNIQUE_NAME # correct level so do code stuff, use a contrived long name so we dont clash
+ ori r0, r0, 0 #dummy noop to be replaced with the original code at the insertion point, 0x60000000
+ b END_OF_CODE_EXAVOLT_UNIQUE_NAME
+ CODE_BLOCK_EXAVOLT_UNIQUE_NAME:
+
+ ####### LEVEL BYPASS CODES ######
+
+  """
+  # Prepend switch code to file
+  # first read entire file into memory so we can do that
+  with open(file, 'r') as original:
+    data = original.read()
+
+  data = level_switch_code + data + "END_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
+
+  with open(file, 'w') as new_file:
+    new_file.write(data)
+
+  bytes = assemble_code_to_bytes(file)
+  #now replace the noop with the orignal code at the target location
+  from lib.dol import parse_dol_table, get_file_from_memory_address
+  table = parse_dol_table(dol)
+  file_address = get_file_from_memory_address(table, address)
+  with open(dol, "rb") as dol_reader:
+    dol_reader.seek(file_address)
+    original = dol_reader.read(4)
+  bytes = bytes.replace(int(0x60000000).to_bytes(4, byteorder='big'), original)
+
+  insert_bytes_into_codes_file(codes_file_location, bytes, address)

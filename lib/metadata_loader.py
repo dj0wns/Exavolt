@@ -214,6 +214,37 @@ class ModMetadata:
             raise ValueError('levels[' + str(index) + ']["gt"]')
           new_level['gt'] = level['gt']
 
+        if "level_assembly_files" in level:
+          if not isinstance(level['level_assembly_files'], list):
+            raise ValueError('levels[' + str(index) + ']["level_assembly_files"]')
+          asm_index = 0
+          for level_assembly_file in level['level_assembly_files']:
+            new_level_assembly_file = {}
+            if not isinstance(level_assembly_file, dict):
+              raise ValueError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']')
+            if "file" in level_assembly_file:
+              if not isinstance(level_assembly_file['file'], str):
+                raise ValueError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']["file"]')
+              new_level_assembly_file["file"] = level_assembly_file["file"]
+            else:
+              # Required field
+              raise KeyError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']["file"]')
+            if "injection_location" in level_assembly_file:
+              if not isinstance(level_assembly_file['injection_location'], str):
+                raise ValueError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']["injection_location"]')
+              try:
+                level_assembly_int_location = int(level_assembly_file['injection_location'], 16)
+              except ValueError:
+                raise ValueError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']["injection_location"] must be of the form 0x80xxxxxx')
+              new_level_assembly_file["injection_location"] = level_assembly_int_location
+            else:
+              # Required field
+              raise KeyError('levels[' + str(index) + ']["level_assembly_files"][' + str(asm_index) + ']["injection_location"]')
+            if "level_assembly_files" not in new_level:
+              new_level["level_assembly_files"] = []
+            new_level["level_assembly_files"].append(new_level_assembly_file)
+            asm_index += 1
+
         self.levels.append(new_level)
         index += 1
 

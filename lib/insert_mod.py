@@ -9,7 +9,7 @@ from .ma_tools import mst_extract
 from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
 from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
-from .assembly import insert_assembly_into_codes_file
+from .assembly import insert_assembly_into_codes_file, insert_level_assembly_into_codes_file
 
 FIRST_SP_CSV_INDEX_LEVELS = 6
 FIRST_MP_CSV_INDEX_LEVELS = 8
@@ -108,6 +108,7 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
 
   assembly_files = [assembly_file["file"] for assembly_file in metadata.assembly_files]
+  level_assembly_files = []
 
   # map of files that get replaced, usually level names
   replacement_map = {}
@@ -128,6 +129,15 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
       replacement_map[level['csv']] = f"{level_list[level_index]}.csv"
     if 'gt' in level:
       replacement_map[level['gt']] = f"{level_list[level_index]}.gt"
+    if 'level_assembly_files' in level:
+      if level['type'] == LEVEL_TYPES[0]: #campaign
+        asm_level_index = level_index + 1
+      else: # MP
+        asm_level_index = level_index + 43 # mp levels come after campaign levels for this
+      for asm_file in level['level_assembly_files']:
+        # set up indices for loading in later
+        asm_file['level_index'] = asm_level_index
+        level_assembly_files.append(asm_file)
 
   #insert relevant files into the mst
   with zipfile.ZipFile(metadata.zip_file_path) as mod_zip:
@@ -160,12 +170,19 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
         mst_insert.execute(True, iso_mst, files_to_insert, "")
 
       elif os.path.basename(info.filename).lower() != "manifest.json":
+        for level_assembly_file in level_assembly_files:
+          # list of dicts that shouldnt be too long so we are just going to iterate over everyone one for the O(n^2) dream, lazy. Fix if it matters someday
+          if os.path.basename(info.filename) == level_assembly_file["file"]:
+            # this is an assembly file pertaining to a specific level and should be injected specially
+            tmpdirname = tempfile.TemporaryDirectory()
+            mod_zip.extract(info.filename, tmpdirname.name)
+            file_path = os.path.join(tmpdirname.name, info.filename)
+            insert_level_assembly_into_codes_file(dol, codes_file_location, file_path, level_assembly_file["injection_location"], level_assembly_file['level_index'])
         if os.path.basename(info.filename) in assembly_files:
           # this is an assembly file that needs to be injected into the dol not added to the iso
           tmpdirname = tempfile.TemporaryDirectory()
           mod_zip.extract(info.filename, tmpdirname.name)
           file_path = os.path.join(tmpdirname.name, info.filename)
-          # DISABLED FOR NOW
           insert_assembly_into_codes_file(codes_file_location, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
         else:
           print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')

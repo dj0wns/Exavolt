@@ -74,6 +74,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         print("Updating dol table to:")
         lib.dol.parse_dol_table(dol, True)
         # now insert the code injector loader code
+        print("Injecting assembly")
         lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjector.asm"), 0x80003258)
 
         # Now touch the codes.bin file
