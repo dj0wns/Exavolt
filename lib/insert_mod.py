@@ -10,6 +10,7 @@ from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
 from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
 from .assembly import insert_assembly_into_codes_file, insert_level_assembly_into_codes_file
+from .dol import apply_hack
 
 FIRST_SP_CSV_INDEX_LEVELS = 6
 FIRST_MP_CSV_INDEX_LEVELS = 8
@@ -109,6 +110,9 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
 
   assembly_files = [assembly_file["file"] for assembly_file in metadata.assembly_files]
   level_assembly_files = []
+
+  for gecko_code in metadata.gecko_codes:
+    apply_hack(dol, [gecko_code['opcode'], gecko_code['content']])
 
   # map of files that get replaced, usually level names
   replacement_map = {}

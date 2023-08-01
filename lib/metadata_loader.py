@@ -39,6 +39,7 @@ class ModMetadata:
     self.other_mst_files = []
     self.non_mst_files = []
     self.assembly_files = []
+    self.gecko_codes = []
 
   def summary(self):
     campaign_level_count = 0;
@@ -54,6 +55,7 @@ class ModMetadata:
              "Multiplayer Levels":mp_level_count,
              "Hacks Required": self.hacks_required,
              "Assembly Files": self.assembly_files,
+             "Gecko codes": self.gecko_codes,
              "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
              "Path": self.zip_file_path}
 
@@ -76,6 +78,9 @@ class ModMetadata:
     retstring += f'Assembly Files:\n'
     for assembly_file in self.assembly_files:
       retstring += f'\t{assembly_file}\n'
+    retstring += f'Gecko codes:\n'
+    for gecko_code in self.gecko_codes:
+      retstring += f'\t{gecko_code}\n'
     return retstring
 
   def from_json(self, json_file):
@@ -158,8 +163,42 @@ class ModMetadata:
           new_assembly_file["injection_location"] = assembly_int_location
         else:
           # Required field
-          raise KeyError('injection_location[' + str(index) + ']["injection_location"]')
+          raise KeyError('assembly_files[' + str(index) + ']["injection_location"]')
         self.assembly_files.append(new_assembly_file)
+        index += 1
+
+    self.gecko_codes = []
+    if "gecko_codes" in mod_dict:
+      if not isinstance(mod_dict['gecko_codes'], list):
+        raise ValueError('gecko_codes')
+      index = 0
+      for gecko_code in mod_dict['gecko_codes']:
+        new_gecko_code = {}
+        if not isinstance(gecko_code, dict):
+          raise ValueError('gecko_codes[' + str(index) + ']')
+        if "opcode" in gecko_code:
+          if not isinstance(gecko_code['opcode'], str):
+            raise ValueError('gecko_code[' + str(index) + ']["opcode"]')
+          try:
+            opcode_int = int(gecko_code['opcode'], 16)
+          except ValueError:
+            raise ValueError('gecko_codes[' + str(index) + ']["opcode"] must be of the form 0x04xxxxxx')
+          new_gecko_code["opcode"] = opcode_int
+        else:
+          # Required field
+          raise KeyError('gecko_codes[' + str(index) + ']["opcode"]')
+        if "content" in gecko_code:
+          if not isinstance(gecko_code['content'], str):
+            raise ValueError('gecko_codes[' + str(index) + ']["content"]')
+          try:
+            content_int = int(gecko_code['content'], 16)
+          except ValueError:
+            raise ValueError('gecko_codes[' + str(index) + ']["content"] must be of the form 0x80xxxxxx')
+          new_gecko_code["content"] = content_int
+        else:
+          # Required field
+          raise KeyError('gecko_codes[' + str(index) + ']["content"]')
+        self.gecko_codes.append(new_gecko_code)
         index += 1
 
     self.levels = []
