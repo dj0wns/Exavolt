@@ -8,6 +8,7 @@
 | other\_mst\_files | list(String) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
 | non\_mst\_files | list(String) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
 | assembly\_files | list(ASSEMBLY\_FILE) | Assembly files included with the mod to be inserted into the dol. See ASSEMBLY\_FILE table below for more details |
+| gecko\_codes | list(GECKO\_CODE) | 04 codes that are used to modify the dol. Only use this if you cannot use an assembly file for what you are trying to do. See GECKO\_CODE table below for more details |
 | levels | list(LEVEL) | Any levels your mod contains. See LEVEL table below for more details |
 
 
@@ -31,3 +32,10 @@
 | ---------- | ---- | ----- |
 | file | String | [REQUIRED] Name of assembly file |
 | injection\_location | String | [REQUIRED] String in the form of a 32-bit hex offset ("0x80000000") where the code will be injected |
+
+# GECKO\_CODE options #
+
+| Field Name | Type | Notes |
+| ---------- | ---- | ----- |
+| opcode | String | [REQUIRED] Gecko opcode hex string in the form 04xxxxxx |
+| injection\_location | String | [REQUIRED] Hex String in the form xxxxxxxx to be applied by the opcode |
