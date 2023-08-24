@@ -1,3 +1,9 @@
+################################################################################
+# This codes job is to inject the first phase code loader. This is a simple code
+# injector that is made to fit within the tiny 640 bytes we are allowed and its
+# primary job is load the phase 2 code loader which has far more functionality
+# with no limits.
+################################################################################
 
 ## CONSTANTS
 CodeDestination=0x800032b0
@@ -60,7 +66,7 @@ or r17, r7, r7
 
 bl ENDSTRING
 # pointer to file name
-.string "codes.bin\0\0"
+.string "stage2.bin\0"
 ENDSTRING:
 mflr r3 #file name string
 
@@ -83,6 +89,14 @@ mflr r19 #address buffer
 
 # now read from file while we can
 LOOP_START:
+# read and ignore type information
+#or r3, r22, r22 # file handle
+#li r4, 0x4
+#or r5, r19, r19 #int buffer
+#li r6, 0
+#li r7, 0
+#call ffile_Read
+
 # read byte count
 or r3, r22, r22 # file handle
 li r4, 0x4
@@ -147,7 +161,7 @@ or r4, r14, r14
 or r5, r16, r16
 or r7, r17, r17
 
-# copied code
+#code to be replaced
 lwz r0, 0x44(r1)
 
 ## end of code being injected

@@ -7,6 +7,7 @@ import math
 import sys
 import traceback
 
+import lib.assembly
 import lib.iso
 import lib.metadata_loader
 import lib.insert_mod
@@ -15,6 +16,7 @@ import lib.dol
 import lib.hacks
 import lib.ma_tools.mst_insert
 
+STAGE2_FILE="stage2.bin"
 CODES_FILE="codes.bin"
 
 class IsoExtractionException(Exception):
@@ -57,6 +59,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise IsoExtractionException()
 
   has_assembly_files = False
+  stage2_file_location = False
   codes_file_location = False
   try:
     if files is None or not len(files):
@@ -76,7 +79,14 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         lib.dol.parse_dol_table(dol, True)
         # now insert the code injector loader code
         print("Injecting assembly")
-        lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjector.asm"), 0x80003258)
+        lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
+
+        # Now touch the stage2.bin file to be used for the second phase code loader.
+        stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
+        pathlib.Path(stage2_file_location).touch()
+        lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
+            0x8029e468)
 
         # Now touch the codes.bin file
         codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
@@ -124,7 +134,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     # if there are assembly files then insert the codes.bin file
     if has_assembly_files:
       iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
-      lib.ma_tools.mst_insert.execute(True, iso_mst, [codes_file_location], "")
+      lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
   except Exception:
     raise ValueError("Error assembling assembly models")
 
