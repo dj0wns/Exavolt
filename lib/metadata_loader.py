@@ -34,6 +34,7 @@ class ModMetadata:
     self.title = ""
     self.author = ""
     self.zip_file_path = zip_file_path
+    self.has_assembly_files = False
     self.hacks_required = []
     self.levels = []
     self.other_mst_files = []
@@ -164,6 +165,7 @@ class ModMetadata:
         else:
           # Required field
           raise KeyError('assembly_files[' + str(index) + ']["injection_location"]')
+        self.has_assembly_files = True
         self.assembly_files.append(new_assembly_file)
         index += 1
 
@@ -282,6 +284,7 @@ class ModMetadata:
             if "level_assembly_files" not in new_level:
               new_level["level_assembly_files"] = []
             new_level["level_assembly_files"].append(new_level_assembly_file)
+            self.has_assembly_files = True
             asm_index += 1
 
         self.levels.append(new_level)

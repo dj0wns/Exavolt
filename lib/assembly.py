@@ -59,7 +59,7 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
   with open(file, 'r') as original:
     data = original.read()
 
-  data = level_switch_code + data + "END_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
+  data = level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
 
   with open(file, 'w') as new_file:
     new_file.write(data)

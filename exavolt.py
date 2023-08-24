@@ -57,6 +57,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise IsoExtractionException()
 
   has_assembly_files = False
+  codes_file_location = False
   try:
     if files is None or not len(files):
       mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
@@ -65,7 +66,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
     for metadata in mod_metadatas:
       # see if there are any assembly injections, if so need to expand the dol
-      if metadata.assembly_files:
+      if metadata.has_assembly_files:
         has_assembly_files = True
         # 640 bytes is the current maximum we can expand by
         print("Updating dol table from:")
