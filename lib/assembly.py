@@ -2,6 +2,7 @@ import tempfile
 import os
 import struct
 import shutil
+import lib.assembly_codes
 from pathlib import Path
 from lib.pyiiasmh.ppctools import PpcFormatter
 from enum import Enum
@@ -37,6 +38,10 @@ def get_jump_instruction(start, end):
     # jump forwards
     return 0x48000000 | (jump_distance & 0x00ffffff)
 
+def insert_assembly_into_codes_file(codes_file_location, file, address, include_type = True):
+  bytes = assemble_code_to_bytes(file)
+  insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
+
 # code type is the enum declared above
 def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type = True):
   # now inject the code into the dol
@@ -45,6 +50,17 @@ def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_ty
       dol_writer.write(struct.pack(">I", CodeTypes.STANDARD.value))
     dol_writer.write(struct.pack(">I", len(bytes)))
     dol_writer.write(struct.pack(">I", address))
+    dol_writer.write(bytes)
+
+# code type is the enum declared above
+def insert_code_with_explicit_return_address_into_codes_file(codes_file_location, file, address, return_address):
+  bytes = assemble_code_to_bytes(file)
+  # now inject the code into the dol
+  with open(codes_file_location, "ab") as dol_writer:
+    dol_writer.write(struct.pack(">I", CodeTypes.CUSTOM_RETURN.value))
+    dol_writer.write(struct.pack(">I", len(bytes)))
+    dol_writer.write(struct.pack(">I", address))
+    dol_writer.write(struct.pack(">I", return_address))
     dol_writer.write(bytes)
 
 def insert_assembly_into_codes_file(codes_file_location, file, address, include_type = True):
@@ -88,3 +104,18 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
   bytes = bytes.replace(int(0x60000000).to_bytes(4, byteorder='big'), original)
 
   insert_bytes_into_codes_file(codes_file_location, bytes, address)
+
+def insert_player_spawn_into_codes_file(codes_file_location):
+  insertion_address = 0x80197dd4
+  return_address = 0x80197fb4
+  player_spawn_code = lib.assembly_codes.HEADERS + lib.assembly_codes.SPAWN_AS_GLITCH
+
+  with tempfile.NamedTemporaryFile() as code_file:
+    code_file.write(bytes(player_spawn_code, 'ascii'))
+    code_file.flush()
+
+    insert_code_with_explicit_return_address_into_codes_file(
+        codes_file_location, code_file.name, insertion_address, return_address)
+
+
+

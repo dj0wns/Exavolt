@@ -106,6 +106,16 @@ cmpwi r3, 0
 # branch if read failed (<0 response)
 ble NO_MORE_CODES
 
+# now figure out what type of code
+lwz r3, 0(r18)
+cmpwi r3, 0 # STANDARD CODE
+beq STANDARD_CODE
+cmpwi r3, 1 # Custom return value code
+beq CUSTOM_RETURN_CODE
+
+#no codes should exist here so it probably crashes... lmao
+
+STANDARD_CODE:
 # read byte count
 or r3, r22, r22 # file handle
 li r4, 0x4
@@ -138,7 +148,61 @@ jump r6, r5
 # after end
 addi r6, r6, 4
 lwz r7, 0(r21) # byte length
-#addi r7, r7, 4 # add 4 for last instruction
+add r7, r5, r7 #add byte length to offset
+jump r7, r6
+
+# now read bytes into buffer
+or r3, r22, r22 # file handle
+lwz r4, 0(r21) # byte length
+# r5 already where it needs to go
+li r6, 0
+li r7, 0
+call ffile_Read
+
+b LOOP_START
+
+CUSTOM_RETURN_CODE:
+# read byte count
+or r3, r22, r22 # file handle
+li r4, 0x4
+or r5, r21, r21 #int buffer
+li r6, 0
+li r7, 0
+call ffile_Read
+
+# read address
+or r3, r22, r22 # file handle
+li r4, 0x4
+or r5, r19, r19 # address buffer
+li r6, 0
+li r7, 0
+call ffile_Read
+
+# read return address
+or r3, r22, r22 # file handle
+li r4, 0x4
+or r5, r18, r18 # address buffer
+li r6, 0
+li r7, 0
+call ffile_Read
+
+# declare memory for code
+lis r3, 0x8049 #class address for fmem i guess
+ori r3, r3, 0xf2f0
+lwz r4, 0(r21) # byte length
+addi r4, r4, 0x4 # we are doing long jumps so add in space to long jump
+li r5, 4 #alignment maybe?
+call fmem_AllocAndZero
+or r5, r3, r3 #move new code buffer to proper arg position and save for macro
+
+# create jumps
+# from start
+lwz r6, 0(r19)
+jump r6, r5
+
+#after end
+lwz r6, 0(r18)
+lwz r7, 0(r21) # byte length
 add r7, r5, r7 #add byte length to offset
 jump r7, r6
 

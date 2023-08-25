@@ -132,6 +132,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise ValueError("Error applying dol hacks")
 
   try:
+    # Insert bot type spawning
+    lib.assembly.insert_player_spawn_into_codes_file(codes_file_location)
     # if there are assembly files then insert the codes.bin file
     if has_assembly_files:
       iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
