@@ -38,17 +38,18 @@ def get_jump_instruction(start, end):
     return 0x48000000 | (jump_distance & 0x00ffffff)
 
 # code type is the enum declared above
-def insert_bytes_into_codes_file(codes_file_location, bytes, address):
+def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type = True):
   # now inject the code into the dol
   with open(codes_file_location, "ab") as dol_writer:
-    #dol_writer.write(struct.pack(">I", CodeTypes.STANDARD.value))
+    if include_type:
+      dol_writer.write(struct.pack(">I", CodeTypes.STANDARD.value))
     dol_writer.write(struct.pack(">I", len(bytes)))
     dol_writer.write(struct.pack(">I", address))
     dol_writer.write(bytes)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address):
+def insert_assembly_into_codes_file(codes_file_location, file, address, include_type = True):
   bytes = assemble_code_to_bytes(file)
-  insert_bytes_into_codes_file(codes_file_location, bytes, address)
+  insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
 
 def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index):
   level_switch_code = f"""

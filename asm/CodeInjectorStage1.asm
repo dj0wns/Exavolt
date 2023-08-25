@@ -89,13 +89,6 @@ mflr r19 #address buffer
 
 # now read from file while we can
 LOOP_START:
-# read and ignore type information
-#or r3, r22, r22 # file handle
-#li r4, 0x4
-#or r5, r19, r19 #int buffer
-#li r6, 0
-#li r7, 0
-#call ffile_Read
 
 # read byte count
 or r3, r22, r22 # file handle

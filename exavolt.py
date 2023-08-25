@@ -84,9 +84,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         # Now touch the stage2.bin file to be used for the second phase code loader.
         stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
         pathlib.Path(stage2_file_location).touch()
+        # First stage parse cant handle type information so don't include it
         lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
             os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
-            0x8029e468)
+            0x8029e468, False)
 
         # Now touch the codes.bin file
         codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)

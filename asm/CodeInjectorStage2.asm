@@ -75,6 +75,11 @@ li r6, 1 #unknown
 call ffile_Open
 or r22, r3, r3 #save file handle in r9
 
+bl TYPE_BUFFER
+or r0, r0, r0 #for storing int read from file
+TYPE_BUFFER:
+mflr r18 # size buffer
+
 bl SIZE_BUFFER
 or r0, r0, r0 #for storing int read from file
 SIZE_BUFFER:
@@ -89,18 +94,9 @@ mflr r19 #address buffer
 # now read from file while we can
 LOOP_START:
 # read and ignore type information
-#or r3, r22, r22 # file handle
-#li r4, 0x4
-#or r5, r21, r21 #int buffer
-#li r6, 0
-#li r7, 0
-#call ffile_Read
-
-
-# read byte count
 or r3, r22, r22 # file handle
 li r4, 0x4
-or r5, r21, r21 #int buffer
+or r5, r18, r18 #int buffer
 li r6, 0
 li r7, 0
 call ffile_Read
@@ -109,6 +105,14 @@ call ffile_Read
 cmpwi r3, 0
 # branch if read failed (<0 response)
 ble NO_MORE_CODES
+
+# read byte count
+or r3, r22, r22 # file handle
+li r4, 0x4
+or r5, r21, r21 #int buffer
+li r6, 0
+li r7, 0
+call ffile_Read
 
 # read address
 or r3, r22, r22 # file handle
