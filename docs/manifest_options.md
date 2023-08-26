@@ -20,6 +20,7 @@
 | title | String | Level title, used in the game menu selection |
 | location | String | Level locations, used in the game menu selection |
 | thumbnail | String | Level thumbnail, used in the game menu selection |
+| player_bot | String | The type of bot the player will spawn in as, see PLAYER_BOTS below |
 | wld | String | [REQUIRED] Name of level wld file |
 | csv | String | Name of the level csv file |
 | gt | String | Name of the level gt file |
@@ -39,3 +40,12 @@
 | ---------- | ---- | ----- |
 | opcode | String | [REQUIRED] Gecko opcode hex string in the form 04xxxxxx |
 | injection\_location | String | [REQUIRED] Hex String in the form xxxxxxxx to be applied by the opcode |
+
+# PLAYER_BOTS  - list of valid bots players can spawn in as #
+
+| Bot Name |
+| -------- |
+| Glitch |
+| Mozer |
+| Krunk |
+| Slosh |

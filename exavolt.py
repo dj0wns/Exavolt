@@ -45,6 +45,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   mp_level_index = 0
   hacks = set()
   assembly_files = set()
+  player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
 
   try:
     if extract_only or no_rebuild:
@@ -108,7 +109,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
         #Just skip mods if they have too many levels
         continue
-      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location)
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, player_bot_list)
       sp_level_index += campaign_level_count
       mp_level_index += mp_level_count
   except Exception:
@@ -132,8 +133,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise ValueError("Error applying dol hacks")
 
   try:
-    # Insert bot type spawning
-    lib.assembly.insert_player_spawn_into_codes_file(codes_file_location)
+    # Insert bot type spawning if the list has any changes
+    if player_bot_list != lib.level.LEVEL_BOT_MAP:
+      lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
     # if there are assembly files then insert the codes.bin file
     if has_assembly_files:
       iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")

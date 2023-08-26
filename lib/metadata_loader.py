@@ -232,6 +232,11 @@ class ModMetadata:
             raise ValueError('levels[' + str(index) + ']["location"]')
           new_level['location'] = level['location']
 
+        if "player_bot" in level:
+          if not isinstance(level['player_bot'], str):
+            raise ValueError('levels[' + str(index) + ']["player_bot"]')
+          new_level['player_bot'] = level['player_bot']
+
         if "thumbnail" in level:
           if not isinstance(level['thumbnail'], str):
             raise ValueError('levels[' + str(index) + ']["thumbnail"]')

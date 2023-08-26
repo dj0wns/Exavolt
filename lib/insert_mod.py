@@ -103,7 +103,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   if len(to_insert):
     mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location, player_bot_list):
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
@@ -133,15 +133,20 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
       replacement_map[level['csv']] = f"{level_list[level_index]}.csv"
     if 'gt' in level:
       replacement_map[level['gt']] = f"{level_list[level_index]}.gt"
-    if 'level_assembly_files' in level:
       if level['type'] == LEVEL_TYPES[0]: #campaign
-        asm_level_index = level_index + 1
+        game_level_index = level_index + 1
       else: # MP
-        asm_level_index = level_index + 43 # mp levels come after campaign levels for this
-      for asm_file in level['level_assembly_files']:
-        # set up indices for loading in later
-        asm_file['level_index'] = asm_level_index
-        level_assembly_files.append(asm_file)
+        game_level_index = level_index + 43 # mp levels come after campaign levels for this
+      if 'player_bot' in level:
+        player_bot_list[game_level_index] = level['player_bot']
+      else:
+        # Default any unmentioned player bot to glitch
+        player_bot_list[game_level_index] = "glitch"
+      if 'level_assembly_files' in level:
+        for asm_file in level['level_assembly_files']:
+          # set up indices for loading in later
+          asm_file['level_index'] = game_level_index
+          level_assembly_files.append(asm_file)
 
   #insert relevant files into the mst
   with zipfile.ZipFile(metadata.zip_file_path) as mod_zip:

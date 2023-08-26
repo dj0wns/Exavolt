@@ -105,10 +105,29 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
 
   insert_bytes_into_codes_file(codes_file_location, bytes, address)
 
-def insert_player_spawn_into_codes_file(codes_file_location):
+def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   insertion_address = 0x80197dd4
   return_address = 0x80197fb4
-  player_spawn_code = lib.assembly_codes.HEADERS + lib.assembly_codes.SPAWN_AS_GLITCH
+  player_spawn_code = lib.assembly_codes.HEADERS
+  for i in range(1,58):
+    code_string = ""
+    if level_bot_map[i].lower() == "glitch":
+      code_string=lib.assembly_codes.SPAWN_AS_GLITCH
+    elif level_bot_map[i].lower() == "mozer":
+      code_string=lib.assembly_codes.SPAWN_AS_MOZER
+    elif level_bot_map[i].lower() == "krunk":
+      code_string=lib.assembly_codes.SPAWN_AS_KRUNK
+    elif level_bot_map[i].lower() == "slosh":
+      code_string=lib.assembly_codes.SPAWN_AS_SLOSH
+    else:
+      raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
+    # add if statements for all levels
+    player_spawn_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
+        level_index=i, code_string=code_string,
+        next_label=f"PLAYER_SPAWN_LEVEL_INDEX_{i}",
+        end_label=f"END_OF_PLAYER_SPAWN_CODE")
+  # add final jump code
+  player_spawn_code += "\nEND_OF_PLAYER_SPAWN_CODE:\n"
 
   with tempfile.NamedTemporaryFile() as code_file:
     code_file.write(bytes(player_spawn_code, 'ascii'))
