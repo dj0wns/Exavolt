@@ -242,6 +242,16 @@ class ModMetadata:
             raise ValueError('levels[' + str(index) + ']["thumbnail"]')
           new_level['thumbnail'] = level['thumbnail']
 
+        if "secret_chip_count" in level:
+          if not isinstance(level['secret_chip_count'], int):
+            raise ValueError('levels[' + str(index) + ']["secret_chip_count"]')
+          new_level['secret_chip_count'] = level['secret_chip_count']
+
+        if "speed_chip_time" in level:
+          if not isinstance(level['speed_chip_time'], int):
+            raise ValueError('levels[' + str(index) + ']["speed_chip_time"]')
+          new_level['speed_chip_time'] = level['speed_chip_time']
+
         if "wld" in level:
           if not isinstance(level['wld'], str):
             raise ValueError('levels[' + str(index) + ']["wld"]')

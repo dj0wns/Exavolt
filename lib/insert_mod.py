@@ -45,23 +45,38 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   mp_edited = False
   for level in metadata.levels:
     if level["type"] ==  LEVEL_TYPES[0]: #campaign
-      if "location" in level or "title" in level or "thumbnail" in level:
+      if ("location" in level or
+          "title" in level or
+          "thumbnail" in level or
+          "secret_chip_count" in level,
+          "speed_chip_time" in level):
         sp_edited = True
       else:
         continue
       #location index
       if "location" in level:
         sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["location"]}\n'
+
       sp_level_name_index += 1
       #title index
       if "title" in level:
         sp_data[sp_level_name_index] = f'{sp_data[sp_level_name_index].split("|")[0]}|{level["title"]}\n'
-      if "thumbnail" in level:
-        sp_level_name_index += 1
-        #thumbnail index
+
+      sp_level_name_index += 1
+      if ("thumbnail" in level or
+          "secret_chip_count" in level or
+          "speed_chip_time" in level):
         #convert row to comma segments
         row = sp_data[sp_level_name_index].split(",")
-        row[1] = level["thumbnail"]
+        if "thumbnail" in level:
+          #thumbnail index
+          row[1] = level["thumbnail"]
+        if "secret_chip_count" in level:
+          #secret chip index, make sure to format as float!!
+          row[2] = f"{level['secret_chip_count']}.0"
+        if "speed_chip_time" in level:
+          #speed chip time index, make sure to format as float!!
+          row[3] = f"{level['speed_chip_time']}.0"
         sp_data[sp_level_name_index] = ",".join(row)
     else: #MP
       if "title" in level or "thumbnail" in level:

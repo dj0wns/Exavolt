@@ -20,6 +20,8 @@
 | title | String | Level title, used in the game menu selection |
 | location | String | Level locations, used in the game menu selection |
 | thumbnail | String | Level thumbnail, used in the game menu selection |
+| secret_chip_count | Integer | Number count of secret chips in the level |
+| speed_chip_time | Integer | Time in seconds to earn the speed chip |
 | player_bot | String | The type of bot the player will spawn in as, see PLAYER_BOTS below |
 | wld | String | [REQUIRED] Name of level wld file |
 | csv | String | Name of the level csv file |
