@@ -1,0 +1,26 @@
+{
+  "title": "Mod title",
+  "author": "Mod author",
+  "hacks_required": ["extended_heap"],
+
+  "levels":
+    [
+      {
+        "type": "campaign",
+        "title": "Level name",
+        "location": "Level location",
+        "thumbnail": "Texture",
+        "wld": "level.wld",
+        "csv": "level.csv",
+        "gt": "level.gt"
+      }
+    ],
+
+  "other_mst_files":
+    [ "__ALL__" ],
+
+  "non_mst_files":
+    [ "example.wvs",
+      "example2.wvs" ]
+}
+

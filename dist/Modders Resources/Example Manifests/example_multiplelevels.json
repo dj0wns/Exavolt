@@ -1,0 +1,45 @@
+{
+  "title": "Example - Multiple Levels",
+  "author": "Mod author",
+  "hacks_required": ["extended_heap"],
+
+  "levels":
+    [
+      {
+        "type": "campaign",
+        "title": "Level 1",
+        "location": "Droid Town",
+        "thumbnail": "tfh_invade",
+        "wld": "level1.wld",
+        "csv": "level1.csv",
+        "gt": "level1.gt"
+      },
+
+      {
+        "type": "campaign",
+        "title": "Level 2",
+        "location": "Mil City",
+        "thumbnail": "tfh_milhub",
+        "wld": "level2.wld",
+        "csv": "level2.csv",
+        "gt": "level2.gt",
+        "player_bot": "Slosh"
+      },
+
+      {
+        "type": "multiplayer",
+        "title": "Multiplayer Level",
+        "location": "Whereever",
+        "thumbnail": "tfh_wastej4",
+        "wld": "mplvl.wld",
+        "csv": "mplvl.csv",
+        "gt": "mplvl.gt"
+      }
+    ],
+
+  "other_mst_files":
+    [ "__ALL__" ],
+
+  "non_mst_files":
+    []
+}

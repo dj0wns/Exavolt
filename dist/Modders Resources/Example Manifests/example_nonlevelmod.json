@@ -1,0 +1,15 @@
+{
+  "title": "Example Non-Level Mod",
+  "author": "Mod author",
+  "hacks_required": [],
+
+  "levels":
+    [],
+
+  "other_mst_files":
+    [ "__ALL__" ],
+
+  "non_mst_files":
+    []
+}
+

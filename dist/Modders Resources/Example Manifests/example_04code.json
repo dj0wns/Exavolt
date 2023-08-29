@@ -1,0 +1,27 @@
+{
+  "title": "Example - Gives all bots open dataports",
+  "author": "Avohkii",
+  "hacks_required": [],
+
+  "levels": [],
+
+  "gecko_codes":
+    [
+      { "opcode": "040dcf84",
+        "content": "90bf0d88"
+      },
+      { "opcode": "040dcf88",
+        "content": "90bf0d8c"
+      },
+      { "opcode": "040dd2b4",
+        "content": "907f0d8c"
+      }
+    ],
+
+  "other_mst_files":
+    [ "__ALL__" ],
+
+  "non_mst_files":
+    []
+}
+
