@@ -252,6 +252,26 @@ class ModMetadata:
             raise ValueError('levels[' + str(index) + ']["speed_chip_time"]')
           new_level['speed_chip_time'] = level['speed_chip_time']
 
+        if "load_function_offset" in level:
+          if not isinstance(level['load_function_offset'], int):
+            raise ValueError('levels[' + str(index) + ']["load_function_offset"]')
+          new_level['load_function_offset'] = level['load_function_offset']
+
+        if "unload_function_offset" in level:
+          if not isinstance(level['unload_function_offset'], int):
+            raise ValueError('levels[' + str(index) + ']["unload_function_offset"]')
+          new_level['unload_function_offset'] = level['unload_function_offset']
+
+        if "work_function_offset" in level:
+          if not isinstance(level['work_function_offset'], int):
+            raise ValueError('levels[' + str(index) + ']["work_function_offset"]')
+          new_level['work_function_offset'] = level['work_function_offset']
+
+        if "draw_function_offset" in level:
+          if not isinstance(level['draw_function_offset'], int):
+            raise ValueError('levels[' + str(index) + ']["draw_function_offset"]')
+          new_level['draw_function_offset'] = level['draw_function_offset']
+
         if "wld" in level:
           if not isinstance(level['wld'], str):
             raise ValueError('levels[' + str(index) + ']["wld"]')

@@ -20,13 +20,17 @@
 | title | String | Level title, used in the game menu selection |
 | location | String | Level locations, used in the game menu selection |
 | thumbnail | String | Level thumbnail, used in the game menu selection |
-| secret_chip_count | Integer | Number count of secret chips in the level |
-| speed_chip_time | Integer | Time in seconds to earn the speed chip |
-| player_bot | String | The type of bot the player will spawn in as, see PLAYER_BOTS below |
+| secret\_chip\_count | Integer | Number count of secret chips in the level |
+| speed\_chip\_time | Integer | Time in seconds to earn the speed chip |
+| player\_bot | String | The type of bot the player will spawn in as, see PLAYER_BOTS below |
 | wld | String | [REQUIRED] Name of level wld file |
 | csv | String | Name of the level csv file |
 | gt | String | Name of the level gt file |
 | level\_assembly\_files | list(ASSEMBLY\_FILE) | Assembly files included with the level to be inserted into the dol. These files will be wrapped in an if statement so they only fire if the current level is the active level. See ASSEMBLY\_FILE table below for more details |
+| load\_function\_offset | Integer | Address of a special function called during load, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
+| unload\_function\_offset | Integer | Address of a special function called during unload, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
+| work\_function\_offset | Integer | Address of a special function called every frame, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
+| draw\_function\_offset | Integer | Address of a special function called every draw, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
 
 
 # ASSEMBLY\_FILE options #

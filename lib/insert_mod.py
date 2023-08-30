@@ -21,6 +21,43 @@ CSV_SUFFIX = ".new"
 
 MULTI_LEVEL_CSV_FILE = "multi_lvl$.csv"
 
+DOL_LEVEL_ARRAY_OFFSET = 0x803c93ec
+DOL_LEVEL_ARRAY_STRUCTURE_SIZE = 44 #bytes
+
+def update_level_attributes(metadata, first_sp_level_index, first_mp_level_index, is_gc, dol):
+  # Offset mp by 42 becuase it comes right after
+  SP_OFFSET = DOL_LEVEL_ARRAY_OFFSET + (first_sp_level_index) * DOL_LEVEL_ARRAY_STRUCTURE_SIZE
+  MP_OFFSET = DOL_LEVEL_ARRAY_OFFSET + (first_mp_level_index + 42) * DOL_LEVEL_ARRAY_STRUCTURE_SIZE
+  for level in metadata.levels:
+    # set up and increment offsets
+    if level["type"] ==  LEVEL_TYPES[0]: #campaign
+      offset = SP_OFFSET
+      SP_OFFSET += DOL_LEVEL_ARRAY_STRUCTURE_SIZE
+    else:
+      offset = MP_OFFSET
+      MP_OFFSET += DOL_LEVEL_ARRAY_STRUCTURE_SIZE
+
+    # Now replace the 4 hard coded functions as needed. Null all by default unless someone specifically wants one
+    load_function_offset = level["load_function_offset"] if "load_function_offset" in level else 0x0
+    # Use an 04 code for address so we can reuse more code
+    load_function_offset_address_code = ((offset + 20) & 0x00ffffff) | 0x04000000
+    file_address = apply_hack(dol, [load_function_offset_address_code, load_function_offset])
+
+    unload_function_offset = level["unload_function_offset"] if "unload_function_offset" in level else 0x0
+    # Use an 04 code for address so we can reuse more code
+    unload_function_offset_address_code = ((offset + 24) & 0x00ffffff) | 0x04000000
+    file_address = apply_hack(dol, [unload_function_offset_address_code, unload_function_offset])
+
+    work_function_offset = level["work_function_offset"] if "work_unload_function_offset" in level else 0x0
+    # Use an 04 code for address so we can reuse more code
+    work_function_offset_address_code = ((offset + 28) & 0x00ffffff) | 0x04000000
+    file_address = apply_hack(dol, [work_function_offset_address_code, work_function_offset])
+
+    draw_function_offset = level["draw_function_offset"] if "draw_function_offset" in level else 0x0
+    # Use an 04 code for address so we can reuse more code
+    draw_function_offset_address_code = ((offset + 32) & 0x00ffffff) | 0x04000000
+    file_address = apply_hack(dol, [draw_function_offset_address_code, draw_function_offset])
+
 
 def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc):
   #first extract pick level and multilvl to temp dir
@@ -122,6 +159,8 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
+    # also patch exe with level attributes
+    update_level_attributes(metadata, first_sp_level_index, first_mp_level_index, is_gc, dol)
 
   assembly_files = [assembly_file["file"] for assembly_file in metadata.assembly_files]
   level_assembly_files = []
