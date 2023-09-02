@@ -105,6 +105,124 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
 
   insert_bytes_into_codes_file(codes_file_location, bytes, address)
 
+# Expected dict format:
+# "primary" : list(dict("name", "clip_ammo", "reserve_ammo"))
+# "secondary" : list(dict("name", "clip_ammo", "reserve_ammo"))
+# "battery_count" : int - default 3
+def insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list):
+  insertion_address = 0x801c87d0
+  player_invent_code = lib.assembly_codes.HEADERS
+  for i in range(1,58):
+    code_string = ""
+    # no mods to the weapons so don't add any code
+    # ALL keys must be specified!!!
+    level_invent_map = level_invent_dict_list[i]
+    if not level_invent_map:
+      continue
+    if level_invent_map["primary"]:
+      # store some stuff on the stack, copied from CInventory::SetToDefaults
+      code_string += r"""
+        stwu r1, -0x10(r1) ; Move stack up 10
+        mfspr r0, LR ; save link register
+        stw r0, 0x14(r1) ; save r0
+        stw r31, 0xc(r1) ; save r31
+
+        addi r31, r26, 0x19b0 ; Bot inventory pointer
+
+        or r3, r31, r31
+        li r4, 0x568
+        call fang_MemZero ; zero out the inventory
+      """
+
+      battery_count = level_invent_map["battery_count"] if "battery_count" in level_invent_map else 3
+      code_string += f"li r0, {battery_count}\n"
+      code_string += "stb r0, 0xc7(r31)\n" # store batteries
+
+      # now set up inventory sizes
+      code_string += f"""
+        li r0, {len(level_invent_map["primary"])}
+        stb r0, 0xc4(r31)
+
+        li r0, {len(level_invent_map["secondary"])}
+        stb r0, 0xc5(r31)
+
+        li r0, 1 ; Default primary slot
+        stb r0, 0x55c(r31)
+
+        li r0, 0 ; Default secondary slot
+        stb r0, 0x55d(r31)
+
+        lbz r0, 0x55c(r31) ; primary saved weapons??
+        stb r0, 0x55e(r31)
+
+        lbz r0, 0x55d(r31) ; secondary saved weapons??
+        stb r0, 0x55f(r31)
+
+        li r0, 0 ; euk flags??
+        sth r0, 0x548(r31)
+      """
+      item_size = 24
+      primary_offset = 200
+      secondary_offset = 584
+      for item in level_invent_map["primary"]:
+        # Set up player inventory pointer
+        if item["name"].lower() not in lib.assembly_codes.WEAPON_STRING_ADDR_DICT:
+          raise ValueException(f"Unknown weapon type: {item['name']} on level {i}")
+        weapon_offset = lib.assembly_codes.WEAPON_STRING_ADDR_DICT[item['name'].lower()]
+        # increment offset
+        code_string += f"""
+          or r3, r31, r31 ; inventory pointer
+          addi r4, r31, {primary_offset}
+          lis r5, {weapon_offset}@h
+          ori r5, r5, {weapon_offset}@l
+          li r6, {item['clip_ammo']}
+          li r7, {item['reserve_ammo']}
+          call InitItemInst
+        """
+        primary_offset += item_size
+      for item in level_invent_map["secondary"]:
+        # Set up player inventory pointer
+        if item["name"].lower() not in lib.assembly_codes.WEAPON_STRING_ADDR_DICT:
+          raise ValueException(f"Unknown weapon type: {item['name']} on level {i}")
+        weapon_offset = lib.assembly_codes.WEAPON_STRING_ADDR_DICT[item['name'].lower()]
+        # increment offset
+        code_string += f"""
+          or r3, r31, r31 ; inventory pointer
+          addi r4, r31, {secondary_offset}
+          lis r5, {weapon_offset}@h
+          ori r5, r5, {weapon_offset}@l
+          li r6, {item['clip_ammo']}
+          li r7, {item['reserve_ammo']}
+          call InitItemInst
+        """
+        secondary_offset += item_size
+      # now finish up, pull items off stack and revert the stack
+      code_string += r"""
+          or r3, r31, r31 ; Temp because seems to be needed to load glitch
+          call SetupDefaultItems
+
+          lwz r0, 0x14(r1)
+          lwz r31, 0xc(r1)
+          mtspr LR, r0
+          addi r1, r1, 0x10
+      """
+
+    # add if statements for all levels
+    player_invent_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
+        level_index=i, code_string=code_string,
+        next_label=f"PLAYER_INVENT_LEVEL_INDEX_{i}",
+        end_label=f"END_OF_PLAYER_INVENT_CODE")
+  # add final jump code
+  player_invent_code += "\nEND_OF_PLAYER_INVENT_CODE:\n"
+  player_invent_code += "cmpwi r1, -1\n" # never be true
+
+  with tempfile.NamedTemporaryFile() as code_file:
+    code_file.write(bytes(player_invent_code, 'ascii'))
+    code_file.flush()
+
+    insert_assembly_into_codes_file(
+        codes_file_location, code_file.name, insertion_address)
+
 def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   insertion_address = 0x80197dd4
   return_address = 0x80197fb4

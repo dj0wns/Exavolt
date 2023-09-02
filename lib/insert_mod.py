@@ -155,7 +155,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   if len(to_insert):
     mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location, player_bot_list):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location, player_bot_list, level_invent_dict_list):
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
@@ -196,6 +196,8 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
       else:
         # Default any unmentioned player bot to glitch
         player_bot_list[game_level_index] = "glitch"
+      if "custom_inventory" in level:
+        level_invent_dict_list[game_level_index] = level["custom_inventory"]
       if 'level_assembly_files' in level:
         for asm_file in level['level_assembly_files']:
           # set up indices for loading in later

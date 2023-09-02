@@ -1,8 +1,49 @@
 
+WEAPON_STRING_ADDR_DICT = {
+  # primaries
+  "empty primary" : 0x803ae8a9,
+  "laser l1" : 0x803ae855,
+  "laser l2" : 0x803ad50c,
+  "laser l3" : 0x803ad515,
+  "rlauncher l1" : 0x803ae85e,
+  "rlauncher l2" : 0x803ad570,
+  "rlauncher l3" : 0x803ad57d,
+  "rivet gun l1" : 0x803ae86b,
+  "rivet gun l2" : 0x803ae94d,
+  "rivet gun l3" : 0x803ad556
+  "flamer l1" : 0x803ae878,
+  "ripper l1" : 0x803ae882,
+  "ripper l2" : 0x803ad528,
+  "ripper l3" : 0x803ad532,
+  "spew l1" : 0x803ae88c,
+  "spew l2" : 0x803ad5d1,
+  "spew l3" : 0x803ad5d9,
+  "blaster l1" : 0x803ae894,
+  "blaster l2" : 0x803ad595,
+  "blaster l3" : 0x803ad5a0,
+  "mortar l1" : 0x803ae89f,
+  "tether l1" : 0x803ae926,
+  "tether l2" : 0x803ad5b5,
+  "tether l3" : 0x803ae95a,
+
+  # secondaries
+  "empty secondary" : 0x803ae8ff,
+  "coring charge" : 0x803ae8b7,
+  "magma bomb" : 0x803ae8c5,
+  "emp grenade" : 0x803ae8d0,
+  "cleaner" : 0x803ae8e5,
+  "recruiter grenade" : 0x803ae8ed,
+  "scope l1" : 0x803ae930,
+  "scope l2" : 0x803ae8dc,
+  "wrench" : 0x803ae939,
+}
 
 HEADERS = r"""
 ## Function pointers
 fnew=0x8028fa88
+fang_MemZero=0x8027b728
+InitItemInst=0x801ade1c
+SetupDefaultItems=0x801aeabc
 BotGlitchConstructor=0x80023b6c
 BotGlitchCreate=0x80023dfc
 BotSloshConstructor=0x80075c00

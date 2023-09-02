@@ -290,6 +290,52 @@ class ModMetadata:
             raise ValueError('levels[' + str(index) + ']["gt"]')
           new_level['gt'] = level['gt']
 
+        if "custom_inventory" in level:
+          new_custom_inventory = {}
+          if not isinstance(level["custom_inventory"], dict):
+            raise ValueError('levels[' + str(index) + ']["custom_inventory"]')
+          # primary weapons!
+          if "primary" in level["custom_inventory"]:
+            new_custom_inventory["primary"] = []
+            if not isinstance(level["custom_inventory"]["primary"], list):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["primary"]')
+            item_index = 0
+            for item in level["custom_inventory"]["primary"]:
+              if "name" not in item or not isinstance(item["name"], str):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["primary"][' + str(item_index) + ']["name"]')
+              if "clip_ammo" not in item or not isinstance(item["clip_ammo"], int):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["primary"][' + str(item_index) + ']["clip_ammo"]')
+              if "reserve_ammo" not in item or not isinstance(item["reserve_ammo"], int):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["primary"][' + str(item_index) + ']["reserve_ammo"]')
+              new_custom_inventory["primary"].append({"name":item["name"], "clip_ammo":item["clip_ammo"], "reserve_ammo":item["reserve_ammo"]})
+          else:
+            # Required field
+            raise KeyError('levels[' + str(index) + ']["custom_inventory"]["primary"]')
+
+          # secondary weapons!
+          if "secondary" in level["custom_inventory"]:
+            new_custom_inventory["secondary"] = []
+            if not isinstance(level["custom_inventory"]["secondary"], list):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["secondary"]')
+            item_index = 0
+            for item in level["custom_inventory"]["secondary"]:
+              if "name" not in item or not isinstance(item["name"], str):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["secondary"][' + str(item_index) + ']["name"]')
+              if "clip_ammo" not in item or not isinstance(item["clip_ammo"], int):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["secondary"][' + str(item_index) + ']["clip_ammo"]')
+              if "reserve_ammo" not in item or not isinstance(item["reserve_ammo"], int):
+                raise ValueError('levels[' + str(index) + ']["custom_inventory"]["secondary"][' + str(item_index) + ']["reserve_ammo"]')
+              new_custom_inventory["secondary"].append({"name":item["name"], "clip_ammo":item["clip_ammo"], "reserve_ammo":item["reserve_ammo"]})
+          else:
+            # Required field
+            raise KeyError('levels[' + str(index) + ']["custom_inventory"]["secondary"]')
+
+          if "battery_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["battery_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["battery_count"]')
+            new_custom_inventory["battery_count"] = level["custom_inventory"]["battery_count"]
+          new_level["custom_inventory"] = new_custom_inventory
+
         if "level_assembly_files" in level:
           if not isinstance(level['level_assembly_files'], list):
             raise ValueError('levels[' + str(index) + ']["level_assembly_files"]')

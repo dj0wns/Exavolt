@@ -26,6 +26,7 @@
 | wld | String | [REQUIRED] Name of level wld file |
 | csv | String | Name of the level csv file |
 | gt | String | Name of the level gt file |
+| custom\_inventory | CUSTOM\_INVENTORY | Define a custom inventory to override the one loaded from the save. See CUSTOM\_INVENTORY below for more details. |
 | level\_assembly\_files | list(ASSEMBLY\_FILE) | Assembly files included with the level to be inserted into the dol. These files will be wrapped in an if statement so they only fire if the current level is the active level. See ASSEMBLY\_FILE table below for more details |
 | load\_function\_offset | Integer | Address of a special function called during load, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
 | unload\_function\_offset | Integer | Address of a special function called during unload, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
@@ -46,6 +47,62 @@
 | ---------- | ---- | ----- |
 | opcode | String | [REQUIRED] Gecko opcode hex string in the form 04xxxxxx |
 | injection\_location | String | [REQUIRED] Hex String in the form xxxxxxxx to be applied by the opcode |
+
+# CUSTOM\_INVENTORY options #
+
+| Field Name | Type | Notes |
+| ---------- | ---- | ----- |
+| primary | INVENTORY\_ITEM | [REQUIRED] Items in the primary slot of glitch's inventory. See INVENTORY\_ITEM below for more details |
+| secondary | INVENTORY\_ITEM | [REQUIRED] Items in the secondary slot of glitch's inventory. See INVENTORY\_ITEM below for more details |
+| battery\_count | Integer | Number of batteries glitch spawns with, default is 3 if not specified. |
+
+# INVENTORY\_ITEM options #
+
+| Field Name | Type | Notes |
+| ---------- | ---- | ----- |
+| name | String | See ITEM\_NAME table below for the list of possible options |
+| clip\_ammo | Integer | The amount of starting ammo in the clip |
+| reserve\_ammo | Integer | The amount of starting ammo in reserves |
+
+# ITEM\_NAME - list of valid inventory item names #
+
+| Item Name |
+| -------- |
+| **Primaries** |
+| empty primary |
+| laser l1 |
+| laser l2 |
+| laser l3 |
+| rlauncher l1 |
+| rlauncher l2 |
+| rlauncher l3 |
+| rivet gun l1 |
+| rivet gun l2 |
+| rivet gun l3 |
+| flamer l1 |
+| ripper l1 |
+| ripper l2 |
+| ripper l3 |
+| spew l1 |
+| spew l2 |
+| spew l3 |
+| blaster l1 |
+| blaster l2 |
+| blaster l3 |
+| mortar l1 |
+| tether l1 |
+| tether l2 |
+| tether l3 |
+| **Secondaries** |
+| empty secondary |
+| coring charge |
+| magma bomb |
+| emp grenade |
+| cleaner |
+| recruiter grenade |
+| scope l1 |
+| scope l2 |
+| wrench |
 
 # PLAYER_BOTS  - list of valid bots players can spawn in as #
 
