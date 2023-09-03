@@ -1,8 +1,7 @@
 {
-  "title": "Mod title",
-  "author": "Mod author",
+  "title": "E1M1: SlipGate Complex",
+  "author": "Vissova",
   "hacks_required": ["extended_heap"],
-
   "levels":
     [
       {
@@ -14,10 +13,9 @@
         "secret_chip_count":2,
         "wld": "level.wld",
         "csv": "level.csv",
-        "gt": "level.gt",
+        "gt": "level.gt"
 
-        "custom_inventory" : 
-        {
+        "custom_inventory" : {
           "primary": 
           [
             {
@@ -26,9 +24,14 @@
                "reserve_ammo": 0
             },
             {
-               "name": "laser l1",
+               "name": "flamer l1",
                "clip_ammo": 200,
                "reserve_ammo": 200
+            },
+            {
+               "name": "rivet gun l1",
+               "clip_ammo": 15,
+               "reserve_ammo": 30
             }
           ],
           "secondary": 
@@ -37,23 +40,32 @@
                "name": "empty secondary",
                "clip_ammo": 1,
                "reserve_ammo": 0
+            },
+            {
+               "name": "recruiter grenade",
+               "clip_ammo": 2,
+               "reserve_ammo": 0
             }
           ],
           "default_primary_slot" : 2,
           "default_secondary_slot" : 1,
-          "battery_count" : 1,
-          "arm_servo_count" : 1
+          "battery_count" : 5,
+          "washer_count" : 69,
+          "chip_count" : 2,
+          "secret_chip_count" : 15,
+          "arm_servo_count" : 3,
+          "det_pack_count" : 4,
+          "goff_part_count" : 2
         }
-
-
       }
+
+
     ],
 
   "other_mst_files":
     [ "__ALL__" ],
 
   "non_mst_files":
-    [ "example.wvs",
-      "example2.wvs" ]
+    []
 }
 

@@ -5,36 +5,98 @@ Open Pasm and go to Edit > Configuration Settings
 Change the GC Master File Dir to a new folder that does not contain an mst
 Compile to create a new mst that will only contain your Local files
 Put the new mst, wvb files (if your mod has any), and a manifest.json into a .zip
-Refer to zstorm4's Example Post in the #mod-releases channel as a reference for sharing your mod.
+Refer to zstorm4's Example Post in the #mod-releases channel as a reference for sharing your mod to the Discord server.
+
+Go here for a more detailed explanation of manifest options:
+https://github.com/dj0wns/Exavolt/blob/main/docs/manifest_options.md
 
 
-Manifest.json info:
 
-"hacks_required": ["extended_heap"],
-This sets if the mod requires extended memory, which most mods should by default.
+Basic manifest.json info:
 
-Levels:
-If no levels are included, leave this as "levels": [],
-Additional levels must be in their own sets of brackets with a comma after the closing brackets between them.
+"title": "Mod title"			Required. Title of the mod.
+"author": "Mod author"			Required. Author of the mod.
+"hacks_required": ["extended_heap"]	Sets whether to extend the game's memory. Recommended in most cases.
 
-"Type" 
-Can either be campaign or multiplayer. Either choice will replace an existing SP/MP level in the game with your custom level.
+"levels"		List of levels in the mod. Refer to example_multiplelevels.json
+"type"			Level type, can be campaign or multiplayer.
+"title"			Name of the level that appears in the game menu selection.
+"location"		Level location that appears in the game menu selection.
+"thumbnail"		Texture tga to use as the thumbnail for this level.
+"secret_chip_count"	Number of secret chips in this level.
+"speed_chip_time"	Time in seconds to beat the level for a speed chip.
+"player_bot"		Optional. Sets what bot to start as for this level: Glitch, Mozer, Krunk, Slosh.
+"wld"			Name of the level .wld file.
+"csv"			Name of the level .csv file.
+"gt"			Name of the level .gt node graph file.
+"custom_inventory"	Customize the player inventory for this level. See below for more info.
 
-"Thumbnail"
-Specifies the name of a .tga texture to use as the level's thumbnail.
+"non_mst_files"		Names of files (usually wvb or bik) that don't belong in the mst.
 
-"player_bot"
-Use this to set which bot the player controls in this level. Options are Glitch, Mozer, Krunk, and Slosh. This option shouldn't be included by default since the player will normally play as Glitch anyway.
-example_multiplelevels.json shows an example of how this is written.
 
-"non_mst_files"
-This is for including any files that don't belong in the mst, usually .wvs files.
 
-04 Gecko codes can be included in your mod with "gecko_codes".
+04 Gecko codes:
 Example_04code.json shows how the following code is written in a modloader manifest:
 040dcf84 90bf0d88
 040dcf88 90bf0d8c
 040dd2b4 907f0d8c
-Additional codes can be added simply by including more "opcode" and "content" lines.
+Additional codes can be added by including more "opcode" and "content" lines.
 
-example_nonlevelmod.json is an example manifest for a mod that includes no custom levels, codes, or wvb's. Since non-level mods fall under "other mst files", all that needs to be changed is the mod title and author name.
+
+
+"custom_inventory"
+Refer to example_custominventory.json for an example of how to edit the player inventory for your level. This is not necassary for multiplayer levels since they use the level .csv for the inventory.
+
+Note that "empty primary" and "empty secondary" must always be the first entries in their respective slots. Do not remove them.
+
+List of primary weapons:
+empty primary
+laser l1
+laser l2
+laser l3
+rlauncher l1
+rlauncher l2
+rlauncher l3
+rivet gun l1
+rivet gun l2
+rivet gun l3
+flamer l1
+ripper l1
+ripper l2
+ripper l3
+spew l1
+spew l2
+spew l3
+blaster l1
+blaster l2
+blaster l3
+mortar l1
+tether l1
+tether l2
+tether l3
+
+List of secondaries:
+empty secondary
+coring charge
+magma bomb
+emp grenade
+cleaner
+recruiter grenade
+scope l1
+scope l2
+wrench
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

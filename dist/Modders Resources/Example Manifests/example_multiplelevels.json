@@ -10,9 +10,50 @@
         "title": "Level 1",
         "location": "Droid Town",
         "thumbnail": "tfh_invade",
+        "speed_chip_time":180,
+        "secret_chip_count":2,
         "wld": "level1.wld",
         "csv": "level1.csv",
         "gt": "level1.gt"
+
+        "custom_inventory" : 
+        {
+          "primary": 
+          [
+            {
+               "name": "empty primary",
+               "clip_ammo": 0,
+               "reserve_ammo": 0
+            },
+            {
+               "name": "laser l2",
+               "clip_ammo": 200,
+               "reserve_ammo": 200
+            },
+            {
+               "name": "spew L1",
+               "clip_ammo": 200,
+               "reserve_ammo": 200
+            }
+          ],
+          "secondary": 
+          [
+            {
+               "name": "empty secondary",
+               "clip_ammo": 1,
+               "reserve_ammo": 0
+            },
+            {
+               "name": "coring charge",
+               "clip_ammo": 5,
+               "reserve_ammo": 0
+            }
+          ],
+          "default_primary_slot" : 2,
+          "default_secondary_slot" : 1,
+          "battery_count" : 3,
+          "arm_servo_count" : 2
+        }
       },
 
       {
@@ -20,6 +61,8 @@
         "title": "Level 2",
         "location": "Mil City",
         "thumbnail": "tfh_milhub",
+        "speed_chip_time":0,
+        "secret_chip_count":4,
         "wld": "level2.wld",
         "csv": "level2.csv",
         "gt": "level2.gt",
