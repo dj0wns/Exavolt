@@ -135,21 +135,24 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
       """
 
       battery_count = level_invent_map["battery_count"] if "battery_count" in level_invent_map else 3
-      code_string += f"li r0, {battery_count}\n"
-      code_string += "stb r0, 0xc7(r31)\n" # store batteries
+      default_primary_slot = level_invent_map["default_primary_slot"] if "default_primary_slot" in level_invent_map else 1
+      default_secondary_slot = level_invent_map["default_secondary_slot"] if "default_secondary_slot" in level_invent_map else 0
 
       # now set up inventory sizes
       code_string += f"""
+        li r0, {battery_count} ; battery count
+        stb r0, 0xc7(r31)
+
         li r0, {len(level_invent_map["primary"])}
         stb r0, 0xc4(r31)
 
         li r0, {len(level_invent_map["secondary"])}
         stb r0, 0xc5(r31)
 
-        li r0, 1 ; Default primary slot
+        li r0, {default_primary_slot} ; Default primary slot
         stb r0, 0x55c(r31)
 
-        li r0, 0 ; Default secondary slot
+        li r0, {default_secondary_slot} ; Default secondary slot
         stb r0, 0x55d(r31)
 
         lbz r0, 0x55c(r31) ; primary saved weapons??
@@ -196,10 +199,77 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
           call InitItemInst
         """
         secondary_offset += item_size
+
+      # now load secondary items
+      washer_count = level_invent_map["washer_count"] if "washer_count" in level_invent_map else 0
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 0 ; Inventory position
+         lis r5, 0x803ae820@h ; "Washer"
+         ori r5, r5, 0x803ae820@l
+         li r6, {washer_count}
+         call SetupItem
+      """
+
+      chip_count = level_invent_map["chip_count"] if "chip_count" in level_invent_map else 0
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 1 ; Inventory position
+         lis r5, 0x803ae827@h ; "Chip"
+         ori r5, r5, 0x803ae827@l
+         li r6, {chip_count}
+         call SetupItem
+      """
+
+      secret_chip_count = level_invent_map["secret_chip_count"] if "secret_chip_count" in level_invent_map else 0
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 2 ; Inventory position
+         lis r5, 0x803ae82c@h ; "Secret Chip"
+         ori r5, r5, 0x803ae82c@l
+         li r6, {secret_chip_count}
+         call SetupItem
+      """
+
+      arm_servo_count = level_invent_map["arm_servo_count"] if "arm_servo_count" in level_invent_map else 1
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 3 ; Inventory position
+         lis r5, 0x803ae838@h ; "Arm Servo"
+         ori r5, r5, 0x803ae838@l
+         li r6, {arm_servo_count}
+         call SetupItem
+      """
+
+      det_pack_count = level_invent_map["det_pack_count"] if "det_pack_count" in level_invent_map else 0
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 4 ; Inventory position
+         lis r5, 0x803ae842@h ; "Det Pack"
+         ori r5, r5, 0x803ae842@l
+         li r6, {det_pack_count}
+         call SetupItem
+      """
+
+      goff_part_count = level_invent_map["goff_part_count"] if "goff_part_count" in level_invent_map else 0
+      code_string += f"""
+         or r3, r31, r31 ; inventory pointer
+         li r4, 5 ; Inventory position
+         lis r5, 0x803ae84b@h ; Goff Part
+         ori r5, r5, 0x803ae84b@l
+         li r6, {goff_part_count}
+         call SetupItem
+      """
+
+      # Now final inventory fixups
+      code_string += r"""
+         li r3, 0x6 ; inventory item count
+         stb r3, 0xc6(r31)
+         li r0, 0 ; num inventory pickups??
+         stb r0, 0x0(r31)
+      """
       # now finish up, pull items off stack and revert the stack
       code_string += r"""
-          or r3, r31, r31 ; Temp because seems to be needed to load glitch
-          call SetupDefaultItems
 
           lwz r0, 0x14(r1)
           lwz r31, 0xc(r1)

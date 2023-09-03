@@ -334,6 +334,47 @@ class ModMetadata:
             if not isinstance(level["custom_inventory"]["battery_count"], int):
               raise ValueError('levels[' + str(index) + ']["custom_inventory"]["battery_count"]')
             new_custom_inventory["battery_count"] = level["custom_inventory"]["battery_count"]
+
+          if "default_primary_slot" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["default_primary_slot"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["default_primary_slot"]')
+            new_custom_inventory["default_primary_slot"] = level["custom_inventory"]["default_primary_slot"]
+
+          if "default_secondary_slot" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["default_secondary_slot"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["default_secondary_slot"]')
+            new_custom_inventory["default_secondary_slot"] = level["custom_inventory"]["default_secondary_slot"]
+
+          if "washer_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["washer_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["washer_count"]')
+            new_custom_inventory["washer_count"] = level["custom_inventory"]["washer_count"]
+
+          if "chip_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["chip_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["chip_count"]')
+            new_custom_inventory["chip_count"] = level["custom_inventory"]["chip_count"]
+
+          if "secret_chip_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["secret_chip_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["secret_chip_count"]')
+            new_custom_inventory["secret_chip_count"] = level["custom_inventory"]["secret_chip_count"]
+
+          if "arm_servo_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["arm_servo_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["arm_servo_count"]')
+            new_custom_inventory["arm_servo_count"] = level["custom_inventory"]["arm_servo_count"]
+
+          if "det_pack_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["det_pack_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["det_pack_count"]')
+            new_custom_inventory["det_pack_count"] = level["custom_inventory"]["det_pack_count"]
+
+          if "goff_part_count" in level["custom_inventory"]:
+            if not isinstance(level["custom_inventory"]["goff_part_count"], int):
+              raise ValueError('levels[' + str(index) + ']["custom_inventory"]["goff_part_count"]')
+            new_custom_inventory["goff_part_count"] = level["custom_inventory"]["goff_part_count"]
+
           new_level["custom_inventory"] = new_custom_inventory
 
         if "level_assembly_files" in level:

@@ -10,7 +10,7 @@ WEAPON_STRING_ADDR_DICT = {
   "rlauncher l3" : 0x803ad57d,
   "rivet gun l1" : 0x803ae86b,
   "rivet gun l2" : 0x803ae94d,
-  "rivet gun l3" : 0x803ad556
+  "rivet gun l3" : 0x803ad556,
   "flamer l1" : 0x803ae878,
   "ripper l1" : 0x803ae882,
   "ripper l2" : 0x803ad528,
@@ -43,7 +43,7 @@ HEADERS = r"""
 fnew=0x8028fa88
 fang_MemZero=0x8027b728
 InitItemInst=0x801ade1c
-SetupDefaultItems=0x801aeabc
+SetupItem=0x801ae8e8
 BotGlitchConstructor=0x80023b6c
 BotGlitchCreate=0x80023dfc
 BotSloshConstructor=0x80075c00

@@ -54,7 +54,15 @@
 | ---------- | ---- | ----- |
 | primary | INVENTORY\_ITEM | [REQUIRED] Items in the primary slot of glitch's inventory. See INVENTORY\_ITEM below for more details |
 | secondary | INVENTORY\_ITEM | [REQUIRED] Items in the secondary slot of glitch's inventory. See INVENTORY\_ITEM below for more details |
-| battery\_count | Integer | Number of batteries glitch spawns with, default is 3 if not specified. |
+| battery\_count | Integer | Number of batteries glitch spawns with, default is 3 |
+| default\_primary\_slot | Integer | 0 indexed value of the default selected primary weapon, default is 1 |
+| default\_secondary\_slot | Integer | 0 indexed value of the default selected secondary weapon, default is 0 |
+| washer\_count | Integer | Number of starting washers, default is 0 |
+| chip\_count | Integer | Number of starting chips, default is 0 |
+| secret\_chip\_count | Integer | Number of starting secret chips, default is 0 |
+| arm\_servo\_count | Integer | Number of starting arm servos, default is 1 |
+| det\_pack\_count | Integer | Number of starting det packs, default is 0 |
+| goff\_part\_count | Integer | Number of starting goff parts, default is 0  |
 
 # INVENTORY\_ITEM options #
 
@@ -63,6 +71,7 @@
 | name | String | See ITEM\_NAME table below for the list of possible options |
 | clip\_ammo | Integer | The amount of starting ammo in the clip |
 | reserve\_ammo | Integer | The amount of starting ammo in reserves |
+
 
 # ITEM\_NAME - list of valid inventory item names #
 
