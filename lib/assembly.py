@@ -21,6 +21,7 @@ def assemble_code_to_bytes(file):
   tmpdir = Path(tempfile.mkdtemp(prefix="pyiiasmh-"))
   # copy file in the short term to not mess with formatting
   new_file_path = os.path.join(tmpdir, os.path.basename(file))
+  print(file, new_file_path)
   new_file = shutil.copyfile(file, new_file_path)
   formatter = PpcFormatter()
   formatter.bapo = False
@@ -286,12 +287,16 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
   player_invent_code += "\nEND_OF_PLAYER_INVENT_CODE:\n"
   player_invent_code += "cmpwi r1, -1\n" # never be true
 
-  with tempfile.NamedTemporaryFile() as code_file:
-    code_file.write(bytes(player_invent_code, 'ascii'))
-    code_file.flush()
+  # Windows wont allow 2 file handles i guess. shutil fails to work with this
+  code_file = tempfile.NamedTemporaryFile(delete=False)
+  code_file.write(bytes(player_invent_code, 'ascii'))
+  code_file.flush()
+  code_file.close()
 
-    insert_assembly_into_codes_file(
-        codes_file_location, code_file.name, insertion_address)
+  insert_assembly_into_codes_file(
+    codes_file_location, code_file.name, insertion_address)
+  # manually delete code file!
+  os.unlink(code_file.name)
 
 def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   insertion_address = 0x80197dd4
@@ -317,12 +322,14 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   # add final jump code
   player_spawn_code += "\nEND_OF_PLAYER_SPAWN_CODE:\n"
 
-  with tempfile.NamedTemporaryFile() as code_file:
-    code_file.write(bytes(player_spawn_code, 'ascii'))
-    code_file.flush()
+  # Windows wont allow 2 file handles i guess. shutil fails to work with this
+  code_file = tempfile.NamedTemporaryFile(delete=False)
+  code_file.write(bytes(player_spawn_code, 'ascii'))
+  code_file.flush()
+  code_file.close()
 
-    insert_code_with_explicit_return_address_into_codes_file(
+  insert_code_with_explicit_return_address_into_codes_file(
         codes_file_location, code_file.name, insertion_address, return_address)
-
-
+  # manually delete code file!
+  os.unlink(code_file.name)
 

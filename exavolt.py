@@ -137,11 +137,13 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   try:
     # Insert bot type spawning if the list has any changes
     if player_bot_list != lib.level.LEVEL_BOT_MAP:
+      print("Inserting player bot modifications")
       has_assembly_files = True
       lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
 
     # Insert bot type spawning if the list has any changes
     if level_invent_dict_list != level_invent_dict_list_initial:
+      print("Inserting player inventory modifications")
       has_assembly_files = True
       lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
 
