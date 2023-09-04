@@ -62,8 +62,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise IsoExtractionException()
 
   has_assembly_files = False
-  stage2_file_location = False
-  codes_file_location = False
+  stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
+  pathlib.Path(stage2_file_location).touch()
+  codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
+  pathlib.Path(codes_file_location).touch()
   try:
     if files is None or not len(files):
       mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
@@ -84,17 +86,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         print("Injecting assembly")
         lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
 
-        # Now touch the stage2.bin file to be used for the second phase code loader.
-        stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
-        pathlib.Path(stage2_file_location).touch()
         # First stage parse cant handle type information so don't include it
         lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
             os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
             0x8029e468, False)
-
-        # Now touch the codes.bin file
-        codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
-        pathlib.Path(codes_file_location).touch()
         break
 
     for metadata in mod_metadatas:
@@ -106,11 +101,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       for hack in summary["Hacks Required"]:
         hacks.add(hack)
       if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
-        #Just skip mods if they have too many levels
-        continue
+        print(f'Too many single player levels being injected! {campaign_level_count + sp_level_index} exceeds the limit of {len(lib.level.CAMPAIGN_LEVEL_NAMES)} ')
+        raise ModInsertionException()
       if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
-        #Just skip mods if they have too many levels
-        continue
+        print(f'Too many single player levels being injected! {mp_level_count + mp_level_index} exceeds the limit of {len(lib.level.MULTIPLAYER_LEVEL_NAMES)} ')
+        raise ModInsertionException()
       lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, player_bot_list, level_invent_dict_list)
       sp_level_index += campaign_level_count
       mp_level_index += mp_level_count

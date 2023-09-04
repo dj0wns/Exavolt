@@ -48,7 +48,7 @@ def update_level_attributes(metadata, first_sp_level_index, first_mp_level_index
     unload_function_offset_address_code = ((offset + 24) & 0x00ffffff) | 0x04000000
     file_address = apply_hack(dol, [unload_function_offset_address_code, unload_function_offset])
 
-    work_function_offset = level["work_function_offset"] if "work_unload_function_offset" in level else 0x0
+    work_function_offset = level["work_function_offset"] if "work_function_offset" in level else 0x0
     # Use an 04 code for address so we can reuse more code
     work_function_offset_address_code = ((offset + 28) & 0x00ffffff) | 0x04000000
     file_address = apply_hack(dol, [work_function_offset_address_code, work_function_offset])
@@ -192,7 +192,7 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
       else: # MP
         game_level_index = level_index + 43 # mp levels come after campaign levels for this
       if 'player_bot' in level:
-        player_bot_list[game_level_index] = level['player_bot']
+        player_bot_list[game_level_index] = level['player_bot'].lower()
       else:
         # Default any unmentioned player bot to glitch
         player_bot_list[game_level_index] = "glitch"
