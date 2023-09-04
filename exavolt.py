@@ -77,19 +77,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       if metadata.has_assembly_files:
         has_assembly_files = True
         # 640 bytes is the current maximum we can expand by
-        print("Updating dol table from:")
-        lib.dol.parse_dol_table(dol, True)
-        lib.dol.add_code_section(dol)
-        print("Updating dol table to:")
-        lib.dol.parse_dol_table(dol, True)
         # now insert the code injector loader code
         print("Injecting assembly")
-        lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
-
-        # First stage parse cant handle type information so don't include it
-        lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
-            0x8029e468, False)
         break
 
     for metadata in mod_metadatas:
@@ -142,8 +131,21 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       has_assembly_files = True
       lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
 
-    # if there are assembly files then insert the codes.bin file
+    # if there are assembly files then insert injectors and the codes.bin file
     if has_assembly_files:
+      print("Updating dol table from:")
+      lib.dol.parse_dol_table(dol, True)
+      lib.dol.add_code_section(dol)
+      print("Updating dol table to:")
+      lib.dol.parse_dol_table(dol, True)
+      print("Injecting stage 1 injector")
+      lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
+
+      print("Injecting stage 2 injector")
+      # First stage parse cant handle type information so don't include it
+      lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
+          os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
+          0x8029e468, False)
       iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
       lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
   except Exception:
