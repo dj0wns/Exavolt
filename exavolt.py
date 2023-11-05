@@ -48,7 +48,6 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
   level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
   level_invent_dict_list = level_invent_dict_list_initial.copy()
-
   try:
     if extract_only or no_rebuild:
       tmp_dir_name = lib.iso.extract_iso(input_iso, str(output_iso))
@@ -66,11 +65,14 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   pathlib.Path(stage2_file_location).touch()
   codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
   pathlib.Path(codes_file_location).touch()
+  # first add default mods
+  # These mods add baseline new functionality to metal arms mods and this allows modders to assume the user has access to these.
+  mod_metadatas = lib.metadata_loader.collect_mods(os.path.join(os.path.dirname(os.path.realpath(__file__)),"default_mods"))
   try:
     if files is None or not len(files):
-      mod_metadatas = lib.metadata_loader.collect_mods(mod_folder)
+      mod_metadatas += lib.metadata_loader.collect_mods(mod_folder)
     else:
-      mod_metadatas = lib.metadata_loader.collect_mods_from_files(files)
+      mod_metadatas += lib.metadata_loader.collect_mods_from_files(files)
 
     for metadata in mod_metadatas:
       # see if there are any assembly injections, if so need to expand the dol
