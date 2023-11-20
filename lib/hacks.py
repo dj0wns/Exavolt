@@ -6,6 +6,12 @@ EXTENDED_HEAP = [
   0x0421807c, 0x3cc000a0, # double fast mem to 10 MB from 5
 ]
 
+DISABLE_HUD_CREATE = [
+  0x0419836c, 0x60000000,
+  0x04198370, 0x60000000,
+  0x04198374, 0x60000000
+]
+
 HACKS = {
   "extended_heap" : EXTENDED_HEAP,
 }

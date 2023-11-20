@@ -25,7 +25,7 @@ def assemble_code_to_bytes(file):
   new_file = shutil.copyfile(file, new_file_path)
   formatter = PpcFormatter()
   formatter.bapo = False
-  machine_code = formatter.asm_opcodes(tmpdir, new_file)
+  machine_code = formatter.asm_opcodes(str(tmpdir)+os.sep, new_file)
   # remove spaces and convert to bytes
   machine_code = machine_code.replace(" ", "").replace("\n","")
   return bytes.fromhex(machine_code)
@@ -299,6 +299,7 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
   os.unlink(code_file.name)
 
 def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
+  internal_label_count = 0
   insertion_address = 0x80197dd4
   return_address = 0x80197fb4
   player_spawn_code = lib.assembly_codes.HEADERS
@@ -312,8 +313,21 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
       code_string=lib.assembly_codes.SPAWN_AS_KRUNK
     elif level_bot_map[i].lower() == "slosh":
       code_string=lib.assembly_codes.SPAWN_AS_SLOSH
+    elif level_bot_map[i].lower() == "titan":
+      code_string=lib.assembly_codes.SPAWN_AS_TITAN
+    elif level_bot_map[i].lower() == "titan_shield":
+      code_string=lib.assembly_codes.SPAWN_AS_TITAN_SHIELD
     else:
       raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
+    # perform fixups for labels, allow 25 for now, this is kinda slow though so...
+    # This allows for fully unique labels
+    for j in range (25):
+      if f"LABEL_{j}" in code_string:
+        code_string = code_string.replace(f"LABEL_{j}", f"LABEL_{internal_label_count}")
+        internal_label_count += 1
+      else:
+        # no more labels so don't keep looking
+        break
     # add if statements for all levels
     player_spawn_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
         level_index=i, code_string=code_string,

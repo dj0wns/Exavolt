@@ -125,6 +125,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     if player_bot_list != lib.level.LEVEL_BOT_MAP:
       print("Inserting player bot modifications")
       has_assembly_files = True
+      lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
       lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
 
     # Insert bot type spawning if the list has any changes
