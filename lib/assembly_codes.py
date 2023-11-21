@@ -78,6 +78,7 @@ BotKrunkCreate=0x800474e4
 BotMozerConstructor=0x800572d0
 BotMozerCreate=0x80057414
 BotTitanConstructor=0x80086c2c
+BotCreate=0x800e07ec
 
 ## String pointers
 default_string_offset=0x803add4e
@@ -117,6 +118,7 @@ bot_titan_string_offset=0x803aa81e
 # Expects bot pointer in r20
 # Expects hud pointer in r21
 # expects player index in r31
+# Uses label 0,1,2,3
 .macro PossessInventoryAndUiSetup
   or r3, r31, r31 # player index
   li r4, 0x1
@@ -458,15 +460,58 @@ BASE_TITAN =r"""
   li r3, SHIELD_VALUE
   stw r3, 0xdd4(r19)
 
-#Step 5 call krunk create (any create works tbh)
-  or r3, r20, r20
-  or r4, r31, r31
-  li r5, 0
-  addi r6, r1, 0x8
-  or r7, r30, r30
-  lis r8, default_string_offset@h
-  ori r8, r8, default_string_offset@l
-  call BotKrunkCreate
+#Step 5 call bot create
+  # load class hierarchy shared resources here
+  or r3, r20, r20 # bot ptr
+  lwz r12, 0x1a0(r3)
+  lwz r12, 0x6c(r12) # classhierarchyloadsharedresources
+  mtspr CTR, r12
+  bctrl
+
+  # botdef is hard coded in classhierarchybuild, so temporarily disable that line - dont forget to reenable!
+  lis r3, 0x6000
+  lis r4, 0x8008
+  addi r4, r4, 0x704c
+  stw r3, 0(r4) # noop mbot_def > pbuilder store command
+
+  # Ai race default is hardcoded in AiBuilder::SetDefaults, so temporarily change the default since titan uses the default
+  lis r3, 0x913d
+  ori r3, r3, 0x0028 #stw r9=1, aibuilder.race
+  lis r4, 0x8023 # Aibuilder.setdefaults
+  ori r4, r4, 0x5298
+  stw r3, 0(r4)
+
+  # create botdef
+
+  or r3, r20, r20 # bot ptr
+  bl LABEL_4 # bot_defs
+  .int 0 # race_mil
+  .int 0xd # Bottype titan
+  .int 0 # subclass none
+  LABEL_4:
+  mfspr r4, LR
+  or r5, r31, r31 # player index
+  li r6, 0 # install data port
+  addi r7, r1, 0x8 # entity name? seems like it will just be garbage lol
+  or r8, r30, r30 # position matrix
+  lis r9, default_string_offset@h
+  ori r9, r9, default_string_offset@l # aibuildername
+  call BotCreate
+
+
+  # reenable hardcoded botdef in titan build
+  lis r3, 0x901e
+  addi r3, r3, 0x0d80
+  lis r4, 0x8008
+  addi r4, r4, 0x704c
+  stw r3, 0(r4) # restore mbotdef command
+
+  # Reset default ai race
+  lis r3, 0x937d
+  ori r3, r3, 0x0028 #stw r9=1, aibuilder.race
+  lis r4, 0x8023 # Aibuilder.setdefaults
+  ori r4, r4, 0x5298
+  stw r3, 0(r4)
 
   # Update chaingun level to possessed titan
   lwz r3, 0x3b8(r20) # weapon[0]
