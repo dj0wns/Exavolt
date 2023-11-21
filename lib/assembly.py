@@ -317,6 +317,8 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
       code_string=lib.assembly_codes.SPAWN_AS_TITAN
     elif level_bot_map[i].lower() == "titan_shield":
       code_string=lib.assembly_codes.SPAWN_AS_TITAN_SHIELD
+    elif level_bot_map[i].lower() == "elite_guard":
+      code_string=lib.assembly_codes.SPAWN_AS_ELITE_GUARD
     else:
       raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
     # perform fixups for labels, allow 25 for now, this is kinda slow though so...

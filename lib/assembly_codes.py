@@ -78,11 +78,13 @@ BotKrunkCreate=0x800474e4
 BotMozerConstructor=0x800572d0
 BotMozerCreate=0x80057414
 BotTitanConstructor=0x80086c2c
+BotEliteGuardConstructor=0x80019d0c
 BotCreate=0x800e07ec
 
 ## String pointers
 default_string_offset=0x803add4e
 bot_titan_string_offset=0x803aa81e
+bot_elite_guard_string_offset=0x803aa8c7
 
 
 ##
@@ -155,7 +157,7 @@ bot_titan_string_offset=0x803aa81e
   # if no primary then set empty hand
   lwz r3, 0x3b8(r20)
   cmpwi r3, 0x0
-  #beq LABEL_0 # if empty hand
+  beq LABEL_0 # if empty hand
   # set up primary upgrade level, possess increments but we dont care about that and that gives us finer weapon level control
   lwz r3, 0x3b8(r20) # weapon[0]
   lwz r4, 0x1bc(r3) # upgrade level i think
@@ -623,12 +625,178 @@ BASE_TITAN =r"""
 SPAWN_AS_TITAN = BASE_TITAN.replace("SHIELD_VALUE", "0").replace("CHAINGUN_LEVEL", "2")
 SPAWN_AS_TITAN_SHIELD = BASE_TITAN.replace("SHIELD_VALUE", "1").replace("CHAINGUN_LEVEL", "2")
 
+SPAWN_AS_ELITE_GUARD =r"""
+  stwu r1, -0x30(r1) # add 0x30 bytes to stack
+
+# Step 1, call fnew
+  li r3, 0xb30 # BotGuard class size
+  li r4, 0x8 #no idea, some constant fnew needs
+  call fnew
+
+# Step 2, call bot constructor
+  call BotEliteGuardConstructor
+  or r20, r3, r3 #store the address in register 20 so its not lost
+  mulli r0, r31, 0x24c8
+  lis r3, 0x8048
+  addi r3, r3, 0x1af8
+  add r3, r3, r0
+  stw r20, 0x18d8(r3)
+
+# Step 3, Get this bots builder
+  lwz r3, 0x1a0(r20) # Get vtable for bot
+  lwz r3, 0x84(r3) # get the pointer stored at bot_vtable + 84
+  mtspr CTR, r3 #Call the function
+  bctrl #returns builder class into r3
+  or r19, r3, r3 # persist builder in r19
+
+# Step 4, call set defaults for BotEliteGuardBuilder
+  lwz r4, 0xd78(r3)
+  lwz r0, 0x8(r4)
+  # setup arguments
+  # r3 already has the class instance
+  li r4, 0
+  li r5, 0
+  li r6, 0
+  li r7, 0
+  li r8, 0
+  lis r9, bot_elite_guard_string_offset@h
+  ori r9, r9, bot_elite_guard_string_offset@l
+  mtspr CTR, r0
+  bctrl
+
+#Step 5 call bot create
+  # load class hierarchy shared resources here
+  or r3, r20, r20 # bot ptr
+  lwz r12, 0x1a0(r3)
+  lwz r12, 0x6c(r12) # classhierarchyloadsharedresources
+  mtspr CTR, r12
+  bctrl
+
+  # botdef is hard coded in classhierarchybuild, so temporarily disable that line - dont forget to reenable!
+  lis r3, 0x6000
+  lis r4, 0x8001
+  ori r4, r4, 0x9f1c
+  stw r3, 0(r4) # noop mbot_def > pbuilder store command
+
+  # Ai race default is hardcoded in AiBuilder::SetDefaults, so temporarily change the default since guard uses the default
+  lis r3, 0x913d
+  ori r3, r3, 0x0028 #stw r9=1, aibuilder.race
+  lis r4, 0x8023 # Aibuilder.setdefaults
+  ori r4, r4, 0x5298
+  stw r3, 0(r4)
+
+  # create botdef
+
+  or r3, r20, r20 # bot ptr
+  bl LABEL_4 # bot_defs
+  .int 0 # race_mil
+  .int 0xb # Bottype guard
+  .int 0x15 # subclass grunt
+  LABEL_4:
+  mfspr r4, LR
+  or r5, r31, r31 # player index
+  li r6, 0 # install data port
+  addi r7, r1, 0x8 # entity name? seems like it will just be garbage lol
+  or r8, r30, r30 # position matrix
+  lis r9, default_string_offset@h
+  ori r9, r9, default_string_offset@l # aibuildername
+  call BotCreate
+
+
+  # reenable hardcoded botdef in guard build
+  lis r3, 0x901e
+  addi r3, r3, 0x0d80
+  lis r4, 0x8001
+  ori r4, r4, 0x9f1c
+  stw r3, 0(r4) # restore mbotdef command
+
+  # Reset default ai race
+  lis r3, 0x937d
+  ori r3, r3, 0x0028 #stw r9=1, aibuilder.race
+  lis r4, 0x8023 # Aibuilder.setdefaults
+  ori r4, r4, 0x5298
+  stw r3, 0(r4)
+
+  #TODO UPDATE STAFF LEVELS
+
+  # Store player hud ptr
+  or r3, r31, r31
+  call GetHudForPlayer
+  or r21, r3, r3 # store hud in r21
+
+# Step 6 Init HUD - these things normally happen after create player bot, so we are splicing them in so we have control of the hud
+  CreateBotHud r20
+
+# Step 7 set up bot inventory (from bot::possess)
+  PossessInventoryAndUiSetup
+
+# Step 8 fixup hud (taken from boteliteguard::possess)
+  or r3, r21, r21 # hud pointer
+
+  li r0, 0x26
+  stw r0, 0x54(r21) #Draw flags
+
+  lwz r0, 0x1c4(r20) # bot.something
+  cmpwi r0, 0x0 # if negative then do nothing pretty much
+  blt LABEL_5
+
+  lis r3, 0x804b
+  ori r3, r3, 0xa784 # float 0.0
+  lfs f1, 0(r3)
+
+  lis r3, 0x804b
+  ori r3, r3, 0xa850 # float 0.33
+  lfs f0, 0(r3)
+
+  lwz r0, 0x1c4(r20) # bot.something, player index??
+  mulli r0, r0, 0x24c8 # seems to be going across the player struct
+  lis r5, 0x8048
+  ori r5, r5, 0x1af8 # player struct
+  add r3, r5, r0 # offset into player array i think
+  addi r3, r3, 0x16c0 # some offset
+
+  stfs f1, 0x18(r3) # store float in players[index][offset][float offset]
+  stfs f0, 0x1c(r3) # store float in players[index][offset][float offset]
+
+  # now call unknown function
+  lwz r0, 0x1c4(r20)
+  mulli r0, r0, 0x24c8 #index back into player array
+  add r3, r5, r0
+  addi r3, r3, 0x16c0
+  li r4, 0x1
+  call 0x801cf874
+
+  lwz r4, 0x1c4(r20)
+  lis r0, 0x8048
+  ori r0, r0, 0x1af8 #player table
+  mulli r3, r4, 0x24c8
+  add r3, r0, r3 #players[index]
+  addi r18, r3, 0x16c0 # store this in r18 for whatever reason
+  lwz r3, 0x16cc(r3) #???
+  rlwinm. r0, r3, 0x0, 0x1b, 0x1b
+  bne LABEL_5
+  rlwinm. r0, r3, 0x0, 0x1e, 0x1e
+  bne LABEL_5
+  or r3, r18, r18
+  call 0x801cbe94 #unknown function
+
+  lwz r0, 0xc(r18)
+  ori r0, r0, 0x2
+  stw r0, 0xc(r18)
+
+  LABEL_5:
+  # clean up stack
+  addi r1, r1, 0x30
+
+"""
+
 BOT_SPAWN_CODES = [
   SPAWN_AS_GLITCH,
   SPAWN_AS_MOZER,
   SPAWN_AS_KRUNK,
   SPAWN_AS_SLOSH,
   SPAWN_AS_TITAN,
-  SPAWN_AS_TITAN_SHIELD
+  SPAWN_AS_TITAN_SHIELD,
+  SPAWN_AS_ELITE_GUARD
 ]
 
