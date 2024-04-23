@@ -77,9 +77,14 @@ BotKrunkConstructor=0x80047324
 BotKrunkCreate=0x800474e4
 BotMozerConstructor=0x800572d0
 BotMozerCreate=0x80057414
+BotGruntConstructor=0x80036868
+BotGruntCreate=0x80036948
 BotTitanConstructor=0x80086c2c
 BotEliteGuardConstructor=0x80019d0c
 BotCreate=0x800e07ec
+
+## Ai Functions
+ai_SetRace=0x8021ffd4
 
 ## String pointers
 default_string_offset=0x803add4e
@@ -790,13 +795,99 @@ SPAWN_AS_ELITE_GUARD =r"""
 
 """
 
-BOT_SPAWN_CODES = [
-  SPAWN_AS_GLITCH,
-  SPAWN_AS_MOZER,
-  SPAWN_AS_KRUNK,
-  SPAWN_AS_SLOSH,
-  SPAWN_AS_TITAN,
-  SPAWN_AS_TITAN_SHIELD,
-  SPAWN_AS_ELITE_GUARD
-]
+# Simplified version of the code found in the disass
+# ignoring most if checks
+BASE_GRUNT=r"""
+
+li r3, 0x9b0
+li r4, 0x8
+call fnew
+or r20, r3, r3 #save ptr to bot
+
+or r4, r3, r3
+call BotGruntConstructor
+
+or r4, r3, r3
+mulli r0, r31, 0x24c8
+lis r3, 0x8048
+addi r3, r3, 0x1af8
+add r3, r3, r0
+stw r4, 0x18d8(r3)
+lwz r3, 0x18d8(r3)
+
+lis r4, 0x803b
+or r7, r30, r30
+subi r5, r4, 0x2320
+addi r6, r1, 0x8
+addi r8, r5, 0x6e
+or r4, r31, r31
+li r5, 0x0
+li r9, 0x0
+li r10, WEAPON_TYPE
+
+# Grunt has a unique 9th variable which can't be passed in registers and has to go on the stack.
+# This variable controls the shield
+# increment stack to make this work
+subi r1, r1, 0x8
+li r0, SHIELD_VALUE
+stw r0, 0x8(r1)
+call BotGruntCreate
+addi r1, r1, 0x8
+
+# Reset default ai race
+or r3, r20, r20
+# from MultiplayerMgr::SpawnNewBuddy::SetInitialTeam - may be usable for every bot to simplify things. TODO
+lwz r3, 0x158(r3)
+li r4, 0x1
+call ai_SetRace
+
+# Store player hud ptr
+or r3, r31, r31
+call GetHudForPlayer
+or r21, r3, r3 # store hud in r21
+
+CreateBotHud r20
+
+# set up bot inventory (from bot::possess)
+PossessInventoryAndUiSetup
+
+# Fixup Hud
+li r0, 0x3b06
+stw r0, 0x54(r21) # draw flags
+
+"""
+SPAWN_AS_GRUNT_UNARMED = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_LASER = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_SPEW = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_FLAMER = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_RIVET = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_ROCKET = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace("SHIELD_VALUE", "0x0")
+SPAWN_AS_GRUNT_UNARMED_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_LASER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_SPEW_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_FLAMER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_RIVET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_ROCKET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace("SHIELD_VALUE", "0x1")
+
+BOT_NAME_DICT = {
+  "glitch":SPAWN_AS_GLITCH,
+  "mozer":SPAWN_AS_MOZER,
+  "krunk":SPAWN_AS_KRUNK,
+  "slosh":SPAWN_AS_SLOSH,
+  "titan":SPAWN_AS_TITAN,
+  "titan_shield":SPAWN_AS_TITAN_SHIELD,
+  "elite_guard":SPAWN_AS_ELITE_GUARD,
+  "grunt_unarmed":SPAWN_AS_GRUNT_UNARMED,
+  "grunt_laser":SPAWN_AS_GRUNT_LASER,
+  "grunt_spew":SPAWN_AS_GRUNT_SPEW,
+  "grunt_flamer":SPAWN_AS_GRUNT_FLAMER,
+  "grunt_rivet":SPAWN_AS_GRUNT_RIVET,
+  "grunt_rocket":SPAWN_AS_GRUNT_ROCKET,
+  "grunt_unarmed_shield":SPAWN_AS_GRUNT_UNARMED_SHIELD,
+  "grunt_laser_shield":SPAWN_AS_GRUNT_LASER_SHIELD,
+  "grunt_spew_shield":SPAWN_AS_GRUNT_SPEW_SHIELD,
+  "grunt_flamer_shield":SPAWN_AS_GRUNT_FLAMER_SHIELD,
+  "grunt_rivet_shield":SPAWN_AS_GRUNT_RIVET_SHIELD,
+  "grunt_rocket_shield":SPAWN_AS_GRUNT_ROCKET_SHIELD,
+}
 

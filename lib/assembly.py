@@ -305,20 +305,9 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   player_spawn_code = lib.assembly_codes.HEADERS
   for i in range(1,58):
     code_string = ""
-    if level_bot_map[i].lower() == "glitch":
-      code_string=lib.assembly_codes.SPAWN_AS_GLITCH
-    elif level_bot_map[i].lower() == "mozer":
-      code_string=lib.assembly_codes.SPAWN_AS_MOZER
-    elif level_bot_map[i].lower() == "krunk":
-      code_string=lib.assembly_codes.SPAWN_AS_KRUNK
-    elif level_bot_map[i].lower() == "slosh":
-      code_string=lib.assembly_codes.SPAWN_AS_SLOSH
-    elif level_bot_map[i].lower() == "titan":
-      code_string=lib.assembly_codes.SPAWN_AS_TITAN
-    elif level_bot_map[i].lower() == "titan_shield":
-      code_string=lib.assembly_codes.SPAWN_AS_TITAN_SHIELD
-    elif level_bot_map[i].lower() == "elite_guard":
-      code_string=lib.assembly_codes.SPAWN_AS_ELITE_GUARD
+    lower_bot_name = level_bot_map[i].lower()
+    if lower_bot_name in lib.assembly_codes.BOT_NAME_DICT:
+      code_string = lib.assembly_codes.BOT_NAME_DICT[lower_bot_name]
     else:
       raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
     # perform fixups for labels, allow 25 for now, this is kinda slow though so...
