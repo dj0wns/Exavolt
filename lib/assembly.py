@@ -320,7 +320,6 @@ def random_bot_code(level_prefix):
       {level_prefix}_BOT_LABEL_{bot_number}:
     """
     bot_number += 1
-  print(random_code)
   return random_code
 
 
