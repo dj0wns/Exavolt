@@ -91,6 +91,8 @@ default_string_offset=0x803add4e
 bot_titan_string_offset=0x803aa81e
 bot_elite_guard_string_offset=0x803aa8c7
 
+## Random functions
+fmath_RandomInt32=0x8031989c
 
 ##
 
@@ -162,7 +164,7 @@ bot_elite_guard_string_offset=0x803aa8c7
   # if no primary then set empty hand
   lwz r3, 0x3b8(r20)
   cmpwi r3, 0x0
-  beq LABEL_0 # if empty hand
+  beq 0f # if empty hand
   # set up primary upgrade level, possess increments but we dont care about that and that gives us finer weapon level control
   lwz r3, 0x3b8(r20) # weapon[0]
   lwz r4, 0x1bc(r3) # upgrade level i think
@@ -200,9 +202,9 @@ bot_elite_guard_string_offset=0x803aa8c7
   lwz r3, 0x3e0(r20) # bot invent
   stw r3, 0xc8(r3) # set owner invent to bot invent ptr
 
-  b LABEL_1
+  b 1f
 
- LABEL_0:
+ 0:
   # no primary so do empty hand
   lis r3, 0x803a
   ori r3, r3, 0x9d2d # "Empty Primary"
@@ -210,13 +212,13 @@ bot_elite_guard_string_offset=0x803aa8c7
   call RetrieveEntry
   lwz r4, 0x3e0(r20)
   stw r3, 0xcc(r4)
- LABEL_1:
+ 1:
 
   # set up secondary weapon inventory
   # if no secondary then set empty hand
   lwz r3, 0x3bc(r20)
   cmpwi r3, 0x0
-  beq LABEL_2 # if empty hand
+  beq 2f # if empty hand
 
   # set up secondary upgrade level, possess increments but we dont care about that and that gives us finer weapon level control
   lwz r3, 0x3bc(r20) # weapon[1]
@@ -255,9 +257,9 @@ bot_elite_guard_string_offset=0x803aa8c7
   lwz r3, 0x3e0(r20) # bot invent
   stw r3, 0x248(r3) # set owner invent to bot invent ptr
 
-  b LABEL_3
+  b 3f
 
- LABEL_2:
+ 2:
   # no secondary so do empty hand
   lis r3, 0x803a
   ori r3, r3, 0x9d3b # "Empty Secondary"
@@ -265,7 +267,7 @@ bot_elite_guard_string_offset=0x803aa8c7
   call RetrieveEntry
   lwz r4, 0x3e0(r20)
   stw r3, 0x24c(r4)
- LABEL_3:
+ 3:
   or r3, r21, r21
   lwz r4, 0x1a8(r20)
   call SetHudMode

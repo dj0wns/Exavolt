@@ -298,6 +298,32 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
   # manually delete code file!
   os.unlink(code_file.name)
 
+def random_bot_code(level_prefix):
+  total_bots = len(lib.assembly_codes.BOT_NAME_DICT)
+  random_code = f"""
+  call fmath_RandomInt32 # puts random int in r3
+  # modulus
+  li r4, {total_bots}
+  divwu r4, r3, r4
+  mulli r4, r4, {total_bots}
+  subf r3, r4, r3
+  """
+  # now lazy jump table to iterate to the matching bot
+  bot_number = 0
+  for bot_code in lib.assembly_codes.BOT_NAME_DICT.values():
+    random_code += f"""
+      cmplwi r3, {bot_number}
+      bne {level_prefix}_BOT_LABEL_{bot_number}
+      # dont forget to replace generic labels to make sure they are unique!
+      {bot_code.replace("LABEL", level_prefix + "_BOT_SUB_LABEL_" + str(bot_number))}
+      b {level_prefix}_BOT_LABEL_{total_bots-1}
+      {level_prefix}_BOT_LABEL_{bot_number}:
+    """
+    bot_number += 1
+  print(random_code)
+  return random_code
+
+
 def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   internal_label_count = 0
   insertion_address = 0x80197dd4
@@ -305,16 +331,20 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   player_spawn_code = lib.assembly_codes.HEADERS
   for i in range(1,58):
     code_string = ""
+    level_prefix = f"LEVEL_{i}_PREFIX_"
     lower_bot_name = level_bot_map[i].lower()
-    if lower_bot_name in lib.assembly_codes.BOT_NAME_DICT:
-      code_string = lib.assembly_codes.BOT_NAME_DICT[lower_bot_name]
+    if lower_bot_name == "random":
+      code_string = random_bot_code(level_prefix)
+    elif lower_bot_name in lib.assembly_codes.BOT_NAME_DICT:
+      # Make sure to replace generic labels to make sure they are unique
+      code_string = lib.assembly_codes.BOT_NAME_DICT[lower_bot_name].replace("LABEL", level_prefix)
     else:
       raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
     # perform fixups for labels, allow 25 for now, this is kinda slow though so...
     # This allows for fully unique labels
     for j in range (25):
-      if f"LABEL_{j}" in code_string:
-        code_string = code_string.replace(f"LABEL_{j}", f"LABEL_{internal_label_count}")
+      if f"{level_prefix}LABEL_{j}" in code_string:
+        code_string = code_string.replace(f"{level_prefix}LABEL_{j}", f"{level_prefix}LABEL_{internal_label_count}")
         internal_label_count += 1
       else:
         # no more labels so don't keep looking
