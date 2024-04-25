@@ -115,7 +115,13 @@ fmath_RandomInt32=0x8031989c
   call gamecam_SetActiveCamera
   call gamecam_GetActiveCamera
   call gamecam_GetViewport # Using r3 from previous
-  stw r23, 0x10(r24)
+
+  # Calculate player struct to set the viewport
+  mulli r0, r31, 0x24c8
+  lis r4, 0x8048
+  addi r4, r4, 0x1af8
+  add r4, r4, r0
+  stw r3, 0x10(r4)
 
   or r3, r31, r31
   call GetHudForPlayer
