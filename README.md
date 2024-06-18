@@ -1,5 +1,7 @@
 # Exavolt - The Metal Arms Mod Loader
 
+Exavolt is the premier community mod loader for the 2003 cult classic Metal Arms: Glitch in the System. Possible through years of reverse engineering work and a niche but dedicated community. Exavolt adds significant functionality over more traditional modding methods such as adding the framework for arbitrary assembly code injection (made possible through the handwritten code injectors in asm/*), data driven overrides of hardcoded level constants such as entity the player spawns as (lib/assembly_codes.py), custom starting inventory (lib/assembly.py), as well as all level images, names and locations. You can see the full list of options in (docs/manifest_options.md). Most importantly, Exavolt drastically simplifies the complex process of applying community mods into a one-click operation for the vast majority of use cases!
+
 ## Where to get Binaries
 Download from [Releases](https://github.com/dj0wns/Exavolt/releases)
 
