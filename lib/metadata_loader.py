@@ -39,6 +39,7 @@ class ModMetadata:
     self.levels = []
     self.other_mst_files = []
     self.non_mst_files = []
+    self.movie_files = []
     self.assembly_files = []
     self.gecko_codes = []
 
@@ -76,6 +77,8 @@ class ModMetadata:
     retstring += f'Non MST Files:\n'
     for non_mst_file in self.non_mst_files:
       retstring += f'\t{non_mst_file}\n'
+    for movie_file in self.movie_files:
+      retstring += f'\t{movie_file}\n'
     retstring += f'Assembly Files:\n'
     for assembly_file in self.assembly_files:
       retstring += f'\t{assembly_file}\n'
@@ -136,6 +139,17 @@ class ModMetadata:
         if not isinstance(non_mst_file, str):
           raise ValueError('non_mst_files[' + str(index) + ']')
         self.non_mst_files.append(non_mst_file)
+        index += 1
+
+    self.movie_files = []
+    if "movie_files" in mod_dict:
+      if not isinstance(mod_dict['movie_files'], list):
+        raise ValueError('movie_files')
+      index = 0
+      for movie_file in mod_dict['movie_files']:
+        if not isinstance(movie_file, str):
+          raise ValueError('movie_files[' + str(index) + ']')
+        self.movie_files.append(movie_file)
         index += 1
 
     self.assembly_files = []

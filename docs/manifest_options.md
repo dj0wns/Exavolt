@@ -7,6 +7,7 @@
 | hacks\_required | list(Hack) | See lib/hacks.py for the list |
 | other\_mst\_files | list(String) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
 | non\_mst\_files | list(String) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
+| movie\_files | list(String) |  List of all files to be added to the "Movies" directory in the iso - typically bink movies. |
 | assembly\_files | list(ASSEMBLY\_FILE) | Assembly files included with the mod to be inserted into the dol. See ASSEMBLY\_FILE table below for more details |
 | gecko\_codes | list(GECKO\_CODE) | 04 codes that are used to modify the dol. Only use this if you cannot use an assembly file for what you are trying to do. See GECKO\_CODE table below for more details |
 | levels | list(LEVEL) | Any levels your mod contains. See LEVEL table below for more details |

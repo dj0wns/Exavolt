@@ -249,6 +249,13 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
           mod_zip.extract(info.filename, tmpdirname.name)
           file_path = os.path.join(tmpdirname.name, info.filename)
           insert_assembly_into_codes_file(codes_file_location, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
+        elif os.path.basename(info.filename) in metadata.movie_files:
+          tmpdirname = tempfile.TemporaryDirectory()
+          mod_zip.extract(info.filename, tmpdirname.name)
+          file_path = os.path.join(tmpdirname.name, info.filename)
+          new_filename = os.path.join(iso_dir, "root", "files", "Movies", os.path.basename(info.filename))
+          print(file_path, new_filename)
+          shutil.move(file_path, new_filename)
         else:
           print(f'Extracting {info.filename} to {os.path.join(iso_dir, "root")}')
           #first move to temporary directory and then copy to the right spot to dodge added folders
