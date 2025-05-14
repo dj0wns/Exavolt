@@ -36,6 +36,7 @@ class ModMetadata:
     self.zip_file_path = zip_file_path
     self.has_assembly_files = False
     self.hacks_required = []
+    self.csv_edits = []
     self.levels = []
     self.other_mst_files = []
     self.non_mst_files = []
@@ -56,6 +57,7 @@ class ModMetadata:
              "Campaign Levels":campaign_level_count,
              "Multiplayer Levels":mp_level_count,
              "Hacks Required": self.hacks_required,
+             "CSV Edits": self.csv_edits,
              "Assembly Files": self.assembly_files,
              "Gecko codes": self.gecko_codes,
              "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
@@ -68,6 +70,9 @@ class ModMetadata:
     retstring += f'Hacks_required:\n'
     for mod in self.hacks_required:
       retstring += f'\t{mod}\n'
+    retstring += f'CSV_Edits:\n'
+    for csv_edit in self.csv_edits:
+      retstring += f'\t{csv_edit}\n'
     retstring += f'Levels:\n'
     for level in self.levels:
       retstring += f'\t{level}\n'
@@ -117,6 +122,50 @@ class ModMetadata:
         if mod not in HACKS:
           raise ValueError('hacks_required[' + str(index) + ']')
         self.hacks_required.append(mod)
+        index += 1
+
+    self.csv_edits = []
+    if "csv_edits" in mod_dict:
+      if not isinstance(mod_dict['csv_edits'], list):
+        raise ValueError('csv_edits')
+      index = 0
+      for csv_edit in mod_dict['csv_edits']:
+        new_csv_edit = {}
+
+        if not isinstance(csv_edit, dict):
+          raise ValueError('csv_edits[' + str(index) + ']')
+
+        if "file" in csv_edit:
+          if not isinstance(csv_edit['file'], str):
+            raise ValueError('csv_edits[' + str(index) + ']["file"]')
+          new_csv_edit["file"] = csv_edit["file"]
+        else:
+          # Required field
+          raise KeyError('csv_edits[' + str(index) + ']["file"]')
+
+        if "row" in csv_edit:
+          if not isinstance(csv_edit['row'], int):
+            raise ValueError('csv_edits[' + str(index) + ']["row"]')
+          new_csv_edit["row"] = csv_edit["row"]
+        else:
+          # Required field
+          raise KeyError('csv_edits[' + str(index) + ']["row"]')
+
+        if "col" in csv_edit:
+          if not isinstance(csv_edit['col'], int):
+            raise ValueError('csv_edits[' + str(index) + ']["col"]')
+          new_csv_edit["col"] = csv_edit["col"]
+        else:
+          # Required field
+          raise KeyError('csv_edits[' + str(index) + ']["col"]')
+
+        if "value" in csv_edit:
+          new_csv_edit["value"] = csv_edit["value"]
+        else:
+          # Required field
+          raise KeyError('csv_edits[' + str(index) + ']["value"]')
+
+        self.csv_edits.append(new_csv_edit)
         index += 1
 
     self.other_mst_files = []

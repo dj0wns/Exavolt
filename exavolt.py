@@ -14,6 +14,7 @@ import lib.insert_mod
 import lib.level
 import lib.dol
 import lib.hacks
+import lib.file_edits
 import lib.ma_tools.mst_insert
 
 STAGE2_FILE="stage2.bin"
@@ -44,6 +45,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   sp_level_index = 0
   mp_level_index = 0
   hacks = set()
+  csv_edits = []
   assembly_files = set()
   player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
   level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
@@ -91,6 +93,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       #add hacks
       for hack in summary["Hacks Required"]:
         hacks.add(hack)
+      #add csv edits
+      for csv_edit in summary["CSV Edits"]:
+        csv_edits.append(csv_edit)
       if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
         print(f'Too many single player levels being injected! {campaign_level_count + sp_level_index} exceeds the limit of {len(lib.level.CAMPAIGN_LEVEL_NAMES)} ')
         raise ModInsertionException()
@@ -119,6 +124,23 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
   except Exception:
     raise ValueError("Error applying dol hacks")
+
+  try:
+    #apply csv edits
+    # First combine to a dict of file : edits
+    csv_dict = {}
+    for csv_edit in csv_edits:
+      if csv_edit['file'] not in csv_dict:
+        # lazy copy just leave file in both places
+        csv_dict[csv_edit['file']] = [csv_edit]
+      else:
+        csv_dict[csv_edit['file']].append(csv_edit)
+
+    for csv_file, values in csv_dict.items():
+      print(f'Applying csv edits to {csv_file}\n{values}')
+      lib.file_edits.apply_csv_edits(metadata, tmp_dir_name, csv_file, values, True)
+  except Exception:
+    raise ValueError("Error applying csv edits")
 
   try:
     # Insert bot type spawning if the list has any changes
