@@ -37,7 +37,13 @@ def apply_csv_edits(metadata, iso_dir, csv_file, values, is_gc):
       csv_matrix.append(row)
 
     for edit in values:
-      csv_matrix[edit['row']][edit['col']] = edit['value']
+      match edit["operation"]:
+          case "replace":
+            csv_matrix[edit['row']][edit['col']] = edit['value']
+          case "add_line":
+            csv_matrix.append(edit['value'])
+          case _:
+            raise Exception(f"Invalid operation type: {edit['operation']}")
 
   # overwrite the original file
   with open(os.path.join(csv_dir_name, csv_file), 'w', newline='') as file:

@@ -44,6 +44,12 @@ Additional codes can be added by including more "opcode" and "content" lines.
 
 
 
+Editing CSV files:
+example_CSVedit.json shows how CSV files can be modified. The column and row where a value is stored must be specified so the new value can be written to that spot.
+New lines can also be added to a csv.
+
+
+
 "custom_inventory"
 Refer to example_custominventory.json for an example of how to edit the player inventory for your level. This is not necassary for multiplayer levels since they use the level .csv for the inventory.
 
@@ -85,15 +91,6 @@ recruiter grenade
 scope l1
 scope l2
 wrench
-
-
-
-
-
-
-
-
-
 
 
 

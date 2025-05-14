@@ -1,0 +1,77 @@
+{
+  "title": "Mod title",
+  "author": "Mod author",
+  "hacks_required": ["extended_heap"],
+
+  "levels":
+    [],
+
+  "other_mst_files":
+    [ "__ALL__" ],
+
+  "non_mst_files":
+    [],
+
+
+  "csv_edits":
+    [
+      {
+        "file": "w_rivet.csv",
+        "col": 7,
+        "row": 0,
+        "value": 15.0
+      },
+
+      {
+        "file": "w_rivet.csv",
+        "operation": "add_line",
+        "value":
+          [
+            "rivetl4",
+            "GWDMwpnP601",
+            "GWDMwpnP6cl",
+            "GWDMarrow01",
+            "Primary_Fire",
+            "AttachPoint_Clip",
+            "TFDMrivet01",
+            5.0,
+            25.0,
+            2.0,
+            300.0,
+            200.0,
+            0.0075,
+            0.25,
+            0.0,
+            20.0,
+            1000.0,
+            0.3,
+            400.0,
+            1000.0,
+            20.0,
+            1000.0,
+            "RivImpact",
+            "RivImpact",
+            "RivetL3",
+            "GWDMwpnP6ce",
+            "SpewFire",
+            "SpewMT",
+            "SpewEject",
+            "SpewClip",
+            "SpewSlap",
+            "RivRic",
+            "None",
+            "None",
+            "RivBoom1",
+            "None",
+            "None",
+            4.0,
+            2.0,
+            0.0
+          ]
+       }
+
+
+
+    ]
+}
+

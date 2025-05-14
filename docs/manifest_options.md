@@ -5,6 +5,7 @@
 | title | String | [REQUIRED] Title of your mod |
 | author | String | [REQUIRED] Author's name |
 | hacks\_required | list(Hack) | See lib/hacks.py for the list |
+| csv_edits | list(CSV\_EDIT) | Edits to CSV files, doing them this way reduces liklihood of collision with other mods. These are applied after all files are replaced. |
 | other\_mst\_files | list(String) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
 | non\_mst\_files | list(String) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
 | movie\_files | list(String) |  List of all files to be added to the "Movies" directory in the iso - typically bink movies. |
@@ -34,6 +35,15 @@
 | work\_function\_offset | Integer | Address of a special function called every frame, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
 | draw\_function\_offset | Integer | Address of a special function called every draw, used in some special levels. Default is 0x0, don't use this option unless you know what you are doing |
 
+# CSV\_EDIT options #
+
+| Field Name | Type | Notes |
+| ---------- | ---- | ----- |
+| file | String | [REQUIRED] Name of CSV file to modify |
+| operation | String | Either "replace" or "add_line". Default is "replace" |
+| value | Any | [REQUIRED] If "replace" then a single value to replace, if "add_line" then a list of values to append to the end of the file |
+| col | Any | [REQUIRED if "replace"] What column to replace |
+| row | Any | [REQUIRED if "replace"] What row to replace |
 
 # ASSEMBLY\_FILE options #
 

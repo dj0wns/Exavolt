@@ -125,6 +125,7 @@ class ModMetadata:
         index += 1
 
     self.csv_edits = []
+    valid_operations = ["replace", "add_line"]
     if "csv_edits" in mod_dict:
       if not isinstance(mod_dict['csv_edits'], list):
         raise ValueError('csv_edits')
@@ -143,27 +144,52 @@ class ModMetadata:
           # Required field
           raise KeyError('csv_edits[' + str(index) + ']["file"]')
 
-        if "row" in csv_edit:
-          if not isinstance(csv_edit['row'], int):
-            raise ValueError('csv_edits[' + str(index) + ']["row"]')
-          new_csv_edit["row"] = csv_edit["row"]
+        if "operation" in csv_edit:
+          if not isinstance(csv_edit['operation'], str):
+            raise ValueError('csv_edits[' + str(index) + ']["operation"]')
+          new_csv_edit["operation"] = csv_edit["operation"]
         else:
-          # Required field
-          raise KeyError('csv_edits[' + str(index) + ']["row"]')
+          # default replace
+          new_csv_edit["operation"] = "replace"
 
-        if "col" in csv_edit:
-          if not isinstance(csv_edit['col'], int):
-            raise ValueError('csv_edits[' + str(index) + ']["col"]')
-          new_csv_edit["col"] = csv_edit["col"]
-        else:
-          # Required field
-          raise KeyError('csv_edits[' + str(index) + ']["col"]')
+        match new_csv_edit["operation"]:
+          case "replace":
+            if "row" in csv_edit:
+              if not isinstance(csv_edit['row'], int):
+                raise ValueError('csv_edits[' + str(index) + ']["row"]')
+              new_csv_edit["row"] = csv_edit["row"]
+            else:
+              # Required field
+              raise KeyError('csv_edits[' + str(index) + ']["row"]')
 
-        if "value" in csv_edit:
-          new_csv_edit["value"] = csv_edit["value"]
-        else:
-          # Required field
-          raise KeyError('csv_edits[' + str(index) + ']["value"]')
+            if "col" in csv_edit:
+              if not isinstance(csv_edit['col'], int):
+                raise ValueError('csv_edits[' + str(index) + ']["col"]')
+              new_csv_edit["col"] = csv_edit["col"]
+            else:
+              # Required field
+              raise KeyError('csv_edits[' + str(index) + ']["col"]')
+
+            if "value" in csv_edit:
+              if isinstance(csv_edit['value'], list) or isinstance(csv_edit['value'], dict):
+                raise ValueError('csv_edits[' + str(index) + ']["value"]')
+              new_csv_edit["value"] = csv_edit["value"]
+            else:
+              # Required field
+              raise KeyError('csv_edits[' + str(index) + ']["value"]')
+
+          case "add_line":
+            if "value" in csv_edit:
+              if not isinstance(csv_edit['value'], list):
+                raise ValueError('csv_edits[' + str(index) + ']["value"]')
+              new_csv_edit["value"] = csv_edit["value"]
+            else:
+              # Required field
+              raise KeyError('csv_edits[' + str(index) + ']["value"]')
+
+          case _:
+            raise ValueError('csv_edits[' + str(index) + ']["operation"] invalid operation')
+
 
         self.csv_edits.append(new_csv_edit)
         index += 1
