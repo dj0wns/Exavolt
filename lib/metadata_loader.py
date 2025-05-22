@@ -43,6 +43,7 @@ class ModMetadata:
     self.movie_files = []
     self.assembly_files = []
     self.gecko_codes = []
+    self.scratch_memory_entries = []
 
   def summary(self):
     campaign_level_count = 0;
@@ -60,6 +61,7 @@ class ModMetadata:
              "CSV Edits": self.csv_edits,
              "Assembly Files": self.assembly_files,
              "Gecko codes": self.gecko_codes,
+             "Scratch memory entries": self.scratch_memory_entries,
              "Total Files": len(self.other_mst_files) + len(self.non_mst_files),
              "Path": self.zip_file_path}
 
@@ -90,6 +92,8 @@ class ModMetadata:
     retstring += f'Gecko codes:\n'
     for gecko_code in self.gecko_codes:
       retstring += f'\t{gecko_code}\n'
+    for entry in self.scratch_memory_entries:
+      retstring += f'\t{entry}\n'
     return retstring
 
   def from_json(self, json_file):
@@ -256,6 +260,21 @@ class ModMetadata:
           raise KeyError('assembly_files[' + str(index) + ']["injection_location"]')
         self.has_assembly_files = True
         self.assembly_files.append(new_assembly_file)
+        index += 1
+
+    self.scratch_memory_entries = []
+    if "scratch_memory" in mod_dict:
+      if not isinstance(mod_dict['scratch_memory'], list):
+        raise ValueError('scratch_memory')
+      index = 0
+      for mod in mod_dict['scratch_memory']:
+        if not isinstance(mod, dict):
+          raise ValueError('scratch_memory[' + str(index) + ']')
+        if 'name' not in mod:
+          raise KeyError('scratch_memory[' + str(index) + ']')
+        if 'size' not in mod:
+          raise KeyError('scratch_memory[' + str(index) + ']')
+        self.scratch_memory_entries.append(mod)
         index += 1
 
     self.gecko_codes = []

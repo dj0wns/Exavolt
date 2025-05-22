@@ -11,6 +11,7 @@ from .ma_tools import csv_rebuilder
 from .level import CAMPAIGN_LEVEL_NAMES, MULTIPLAYER_LEVEL_NAMES, LEVEL_TYPES
 from .assembly import insert_assembly_into_codes_file, insert_level_assembly_into_codes_file
 from .dol import apply_hack
+from .scratch_memory import add_entry_to_dict
 
 FIRST_SP_CSV_INDEX_LEVELS = 6
 FIRST_MP_CSV_INDEX_LEVELS = 8
@@ -155,7 +156,7 @@ def update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_in
   if len(to_insert):
     mst_insert.execute(True, iso_mst, to_insert, "")
 
-def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location, player_bot_list, level_invent_dict_list):
+def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, dol, is_gc, codes_file_location, player_bot_list, level_invent_dict_list, default_scratch_memory_entries, memory_offset):
   #add mod to pick level
   if len(metadata.levels):
     update_pick_level(metadata, iso_dir, first_sp_level_index, first_mp_level_index, is_gc)
@@ -167,6 +168,11 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
 
   for gecko_code in metadata.gecko_codes:
     apply_hack(dol, [gecko_code['opcode'], gecko_code['content']])
+
+  local_scratch_memory_replacement_dict = default_scratch_memory_entries.copy()
+
+  for entry in metadata.scratch_memory_entries:
+    add_entry_to_dict(entry, local_scratch_memory_replacement_dict, memory_offset)
 
   # map of files that get replaced, usually level names
   replacement_map = {}
@@ -242,13 +248,13 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
             tmpdirname = tempfile.TemporaryDirectory()
             mod_zip.extract(info.filename, tmpdirname.name)
             file_path = os.path.join(tmpdirname.name, info.filename)
-            insert_level_assembly_into_codes_file(dol, codes_file_location, file_path, level_assembly_file["injection_location"], level_assembly_file['level_index'])
+            insert_level_assembly_into_codes_file(dol, codes_file_location, file_path, level_assembly_file["injection_location"], level_assembly_file['level_index'], local_scratch_memory_replacement_dict)
         if os.path.basename(info.filename) in assembly_files:
           # this is an assembly file that needs to be injected into the dol not added to the iso
           tmpdirname = tempfile.TemporaryDirectory()
           mod_zip.extract(info.filename, tmpdirname.name)
           file_path = os.path.join(tmpdirname.name, info.filename)
-          insert_assembly_into_codes_file(codes_file_location, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"])
+          insert_assembly_into_codes_file(codes_file_location, file_path, metadata.assembly_files[assembly_files.index(os.path.basename(info.filename))]["injection_location"], local_scratch_memory_replacement_dict)
         elif os.path.basename(info.filename) in metadata.movie_files:
           tmpdirname = tempfile.TemporaryDirectory()
           mod_zip.extract(info.filename, tmpdirname.name)

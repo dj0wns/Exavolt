@@ -3,6 +3,7 @@ import os
 import struct
 import shutil
 import lib.assembly_codes
+import jinja2
 from pathlib import Path
 from lib.pyiiasmh.ppctools import PpcFormatter
 from enum import Enum
@@ -39,10 +40,6 @@ def get_jump_instruction(start, end):
     # jump forwards
     return 0x48000000 | (jump_distance & 0x00ffffff)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address, include_type = True):
-  bytes = assemble_code_to_bytes(file)
-  insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
-
 # code type is the enum declared above
 def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type = True):
   # now inject the code into the dol
@@ -64,11 +61,25 @@ def insert_code_with_explicit_return_address_into_codes_file(codes_file_location
     dol_writer.write(struct.pack(">I", return_address))
     dol_writer.write(bytes)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address, include_type = True):
-  bytes = assemble_code_to_bytes(file)
+def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_replacement_dict, include_type = True):
+
+  result_file = file + '.tmp'
+  # Read in the file to apply the template code
+  with open(file, 'r') as original:
+    data = original.read()
+
+  # Apply jinja scratch memory overrides
+  environment = jinja2.Environment()
+  template = environment.from_string(data)
+  data = template.render(jinja_replacement_dict)
+
+  with open(result_file, 'w') as new_file:
+    new_file.write(data)
+
+  bytes = assemble_code_to_bytes(result_file)
   insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
 
-def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index):
+def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index, jinja_replacement_dict):
   level_switch_code = f"""
  ####### LEVEL BYPASS CODES ######
 
@@ -84,6 +95,7 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
  ####### LEVEL BYPASS CODES ######
 
   """
+  result_file = file + '.tmp'
   # Prepend switch code to file
   # first read entire file into memory so we can do that
   with open(file, 'r') as original:
@@ -91,10 +103,16 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
 
   data = level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
 
-  with open(file, 'w') as new_file:
+
+  # Apply jinja scratch memory overrides
+  environment = jinja2.Environment()
+  template = environment.from_string(data)
+  data = template.render(jinja_replacement_dict)
+
+  with open(result_file, 'w') as new_file:
     new_file.write(data)
 
-  bytes = assemble_code_to_bytes(file)
+  bytes = assemble_code_to_bytes(result_file)
   #now replace the noop with the orignal code at the target location
   from lib.dol import parse_dol_table, get_file_from_memory_address
   table = parse_dol_table(dol)
@@ -294,7 +312,7 @@ def insert_player_inventory_into_codes_file(codes_file_location, level_invent_di
   code_file.close()
 
   insert_assembly_into_codes_file(
-    codes_file_location, code_file.name, insertion_address)
+    codes_file_location, code_file.name, insertion_address, {})
   # manually delete code file!
   os.unlink(code_file.name)
 

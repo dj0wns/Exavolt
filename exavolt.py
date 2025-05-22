@@ -14,6 +14,7 @@ import lib.insert_mod
 import lib.level
 import lib.dol
 import lib.hacks
+import lib.scratch_memory
 import lib.file_edits
 import lib.ma_tools.mst_insert
 
@@ -47,6 +48,13 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   hacks = set()
   csv_edits = []
   assembly_files = set()
+  # Scratch memory is used by mods that want to store and access constants at
+  # runtime. This is to prevent this issue where mods just use a random space of
+  # likely unused code without any checks or verification.
+  # Scratch memory is stored in a list to be passed by value
+  scratch_memory_size = [0]
+  scratch_memory_dict = lib.scratch_memory.default_scratch_memory_entries(scratch_memory_size)
+
   player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
   level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
   level_invent_dict_list = level_invent_dict_list_initial.copy()
@@ -80,10 +88,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       # see if there are any assembly injections, if so need to expand the dol
       if metadata.has_assembly_files:
         has_assembly_files = True
-        # 640 bytes is the current maximum we can expand by
-        # now insert the code injector loader code
         print("Injecting assembly")
         break
+
 
     for metadata in mod_metadatas:
       summary = metadata.summary()
@@ -102,7 +109,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
         print(f'Too many single player levels being injected! {mp_level_count + mp_level_index} exceeds the limit of {len(lib.level.MULTIPLAYER_LEVEL_NAMES)} ')
         raise ModInsertionException()
-      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, player_bot_list, level_invent_dict_list)
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, player_bot_list, level_invent_dict_list, scratch_memory_dict, scratch_memory_size)
       sp_level_index += campaign_level_count
       mp_level_index += mp_level_count
   except Exception:
@@ -156,23 +163,31 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       has_assembly_files = True
       lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
 
-    # if there are assembly files then insert injectors and the codes.bin file
-    if has_assembly_files:
-      print("Updating dol table from:")
-      lib.dol.parse_dol_table(dol, True)
-      lib.dol.add_code_section(dol)
-      print("Updating dol table to:")
-      lib.dol.parse_dol_table(dol, True)
-      print("Injecting stage 1 injector")
-      lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
+    # With the addition of scratch memory,
+    # we will always have assembly files to insert
+    print("Updating dol table from:")
+    lib.dol.parse_dol_table(dol, True)
+    lib.dol.add_code_section(dol)
+    print("Updating dol table to:")
+    lib.dol.parse_dol_table(dol, True)
+    print("Injecting stage 1 injector")
+    lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
 
-      print("Injecting stage 2 injector")
-      # First stage parse cant handle type information so don't include it
-      lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
-          os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
-          0x8029e468, False)
-      iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
-      lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
+    print("Injecting stage 2 injector")
+    # First stage parse cant handle type information so don't include it
+    lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
+        os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
+        0x8029e468, {}, False)
+
+    # Add scratch memory declaration script
+    scratch_memory_dict['SCRATCH_MEMORY_SIZE'] = scratch_memory_size[0]
+    lib.assembly.insert_assembly_into_codes_file(codes_file_location,
+        os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "DeclareScratchMemory.asm"),
+        0x8029e49c, scratch_memory_dict)
+
+    iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
+    lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
+
   except Exception:
     raise ValueError("Error assembling assembly models")
 
