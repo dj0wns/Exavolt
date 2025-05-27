@@ -163,6 +163,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       has_assembly_files = True
       lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
 
+
+    asm_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm")
+
     # With the addition of scratch memory,
     # we will always have assembly files to insert
     print("Updating dol table from:")
@@ -171,18 +174,18 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     print("Updating dol table to:")
     lib.dol.parse_dol_table(dol, True)
     print("Injecting stage 1 injector")
-    lib.dol.inject_assembly(dol, os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage1.asm"), 0x80003258)
+    lib.dol.inject_assembly(dol, os.path.join(asm_path, "CodeInjectorStage1.asm"), 0x80003258)
 
     print("Injecting stage 2 injector")
     # First stage parse cant handle type information so don't include it
     lib.assembly.insert_assembly_into_codes_file(stage2_file_location,
-        os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "CodeInjectorStage2.asm"),
+        os.path.join(asm_path, "CodeInjectorStage2.asm"),
         0x8029e468, {}, False)
 
     # Add scratch memory declaration script
     scratch_memory_dict['SCRATCH_MEMORY_SIZE'] = scratch_memory_size[0]
     lib.assembly.insert_assembly_into_codes_file(codes_file_location,
-        os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm", "DeclareScratchMemory.asm"),
+        os.path.join(asm_path, "DeclareScratchMemory.asm"),
         0x8029e49c, scratch_memory_dict)
 
     iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
