@@ -5,7 +5,9 @@ def default_scratch_memory_entries(memory_offset):
     {"name": "SAVE_FILE_POINTER",
      "size": 4},
     {"name": "LEVEL_LIST",
-     "size": 5000} #overreserving
+     "size": 5000}, #overreserving
+    {"name": "MODIFIED_NAME_BUFFER",
+     "size": 16} # Used for save files to make the secondary file unique
   ]
   ret_dict = {
     'SCRATCH_MEMORY_POINTER':'0x800032b0'
