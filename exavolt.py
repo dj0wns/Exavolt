@@ -15,6 +15,7 @@ import lib.level
 import lib.dol
 import lib.hacks
 import lib.scratch_memory
+import lib.secondary_save_file
 import lib.file_edits
 import lib.ma_tools.mst_insert
 
@@ -187,6 +188,12 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     lib.assembly.insert_assembly_into_codes_file(codes_file_location,
         os.path.join(asm_path, "DeclareScratchMemory.asm"),
         0x8029e49c, scratch_memory_dict)
+
+    # Add secondary save file codes
+    lib.secondary_save_file.apply_secondary_save_file_codes(
+        scratch_memory_dict,
+        asm_path,
+        codes_file_location)
 
     iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
     lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")

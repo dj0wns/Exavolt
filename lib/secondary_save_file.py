@@ -9,6 +9,14 @@ def apply_secondary_save_file_codes(
       os.path.join(asm_path, "InitSecondarySaveFileMemory.asm"),
       0x8029e4a0,
       memory_dict)
-  # Code to load file and create if not exists
+  # Code to create file if not exist when saving
+  dol.inject_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "CreateSecondarySaveFile.asm"),
+      0x8019cd40,
+      memory_dict)
 
   # Code to save file
+  dol.inject_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "SaveSecondarySaveFileToDisk.asm"),
+      0x8019cd74,
+      memory_dict)
