@@ -5,10 +5,11 @@
 # region and also allow for more flexibilty in inventory specs etc.
 ###########################################################
 
-## Inject at 0x8029e4a0 - after declaring scratch memory
+## Inject at 0x8029e470 - after declaring scratch memory
 
 ## CONSTANTS
 fnew=0x8028fa88
+replaced_func=0x802ba0ac
 
 ## MACROS
 .macro call addr #cool call macro from minty for constant references to functions
@@ -33,10 +34,9 @@ lwz r4, 0(r4)
 
 lis r12, {{ SAVE_FILE_POINTER }}@h
 ori r12, r12, {{SAVE_FILE_POINTER }} @l
-stw r3, r4(r12)
+add r12, r4, r12
+stw r3, 0(r12)
 
 # command we are replacing!!!
-# This command is from the previous code, but we swallow r12 so do it again just to be safe.
-or r12, r29, r29
-or r4, r31, r31
+call replaced_func
 

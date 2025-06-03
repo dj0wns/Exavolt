@@ -10,7 +10,7 @@ def apply_secondary_save_file_codes(
     codes_file_location):
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "InitSecondarySaveFileMemory.asm"),
-      0x8029e4a0,
+      0x8029e470,
       memory_dict)
   # Code to create file if not exist when saving
   insert_assembly_into_codes_file(codes_file_location,

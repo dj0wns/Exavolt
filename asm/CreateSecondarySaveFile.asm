@@ -38,27 +38,31 @@ ori r6, r6, {{ MODIFIED_NAME_BUFFER }}@l
 add r6, r6, r4 # new name buffer
 
 SAVE_SECONDARY_FILE_NAME_LOOP_START:
-  lhz r7, r3(r5)
+  lhz r7, 0(r5)
   cmpwi r7, 0 # if null byte, exit, replace, add null char
   beq SAVE_SECONDARY_FILE_NAME_SUFFIX
-  sth r7, r3(r6) # TODO store short not word
+  sth r7, 0(r6) # TODO store short not word
   addi r3, r3, 2 # Wide char is 2 bytes
+  addi r6, r6, 2
+  addi r5, r5, 2
   cmpwi r3, 24 # max name length of 12 * size
-  beq SAVE_SECONDARY_FILE_NAME_LOOP_START
+  bne SAVE_SECONDARY_FILE_NAME_LOOP_START
 
 SAVE_SECONDARY_FILE_NAME_SUFFIX:
 li r7, 126 # tilde
-sth r7, r3(r6)
-addi r3, r3, 2 #wide char length
+sth r7, 0(r6)
+addi r6, r6, 2 #wide char length
 li r7, 0x0 # null byte
-sth r7, r3(r6)
+sth r7, 0(r6)
 
 # Now we can index in to the save file memory
 lis r5, {{ SECONDARY_SAVE_FILE_SIZE }}@h
 ori r5, r5, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 
 # Move r6 (player name string) to r4 to prep arguments
-or r4, r6, r6
+lis r6, {{ MODIFIED_NAME_BUFFER }}@h
+ori r6, r6, {{ MODIFIED_NAME_BUFFER }}@l
+add r4, r6, r4 # new name buffer
 
 # Load the device id
 lwz r3, 0x6868(r31)
