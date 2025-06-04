@@ -5,11 +5,10 @@
 # region and also allow for more flexibilty in inventory specs etc.
 ###########################################################
 
-## Inject at 0x8029e470 - after declaring scratch memory
+## Inject at 0x80156758 - after initializing the normal memory
 
 ## CONSTANTS
-fnew=0x8028fa88
-replaced_func=0x802ba0ac
+fres_AlignedAllocAndZero=0x8028fac8
 
 ## MACROS
 .macro call addr #cool call macro from minty for constant references to functions
@@ -24,7 +23,7 @@ ori r3, r3, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 mulli r3, r3, 4 # 4 players!
 li r4, 0x4
 
-call fnew
+call fres_AlignedAllocAndZero
 
 ## Now store the result to SCRATCH_MEMORY_POINTER[SAVE_FILE_POINTER]
 
@@ -38,5 +37,5 @@ add r12, r4, r12
 stw r3, 0(r12)
 
 # command we are replacing!!!
-call replaced_func
+li r30, 0
 
