@@ -5,7 +5,7 @@
 # region and also allow for more flexibilty in inventory specs etc.
 ###########################################################
 
-## Inject at 0x80156758 - after initializing the normal memory
+## Inject at 0x8015675c - after initializing the normal memory
 
 ## CONSTANTS
 fres_AlignedAllocAndZero=0x8028fac8
@@ -37,5 +37,5 @@ add r12, r4, r12
 stw r3, 0(r12)
 
 # command we are replacing!!!
-li r30, 0
+li r31, 0
 

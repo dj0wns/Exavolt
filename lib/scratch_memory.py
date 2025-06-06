@@ -1,3 +1,6 @@
+from .secondary_save_file import save_file_layout_common_offsets
+from .util import add_entry_to_dict
+
 # Memory offset is a tuple so it is passed by reference
 def default_scratch_memory_entries(memory_offset):
   # Register any exavolt controlled memory sectors here
@@ -17,9 +20,7 @@ def default_scratch_memory_entries(memory_offset):
   for entry in default_scratch_memory_entries:
     add_entry_to_dict(entry, ret_dict, memory_offset)
 
-  return ret_dict
+  # Add save file tags
+  ret_dict = ret_dict | save_file_layout_common_offsets()
 
-# Memory offset is a tuple so it is passed by reference
-def add_entry_to_dict(entry, dict, memory_offset):
-  dict[entry['name']] = memory_offset[0]
-  memory_offset[0] += entry['size']
+  return ret_dict

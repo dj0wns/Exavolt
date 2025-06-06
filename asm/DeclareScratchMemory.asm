@@ -3,7 +3,7 @@
 # exavolt internal functions to use.
 ######################################################
 
-## Inject at 0x8029e49c - after injection stage 2
+## Inject at 0x80156758 - after injection stage 2
 
 ## CONSTANTS
 fnew=0x8028fa88
@@ -29,5 +29,5 @@ ori r4, r4, {{ SCRATCH_MEMORY_POINTER }}@l
 stw r3, 0(r4)
 
 # command we are replacing!!!
-or r12, r29, r29
+li r30, 0x0
 

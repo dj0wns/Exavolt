@@ -94,6 +94,7 @@ mullw r5, r5, r7
 lis r3, {{ SAVE_FILE_POINTER }}@h
 ori r3, r3, {{ SAVE_FILE_POINTER }} @l
 add r4, r3, r4
+lwz r4, 0(r4) # make sure to load the save file pointer!
 
 # And add to the base pointer and now we have the memory offset
 add r6, r4, r5

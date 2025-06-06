@@ -187,7 +187,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     scratch_memory_dict['SCRATCH_MEMORY_SIZE'] = scratch_memory_size[0]
     lib.assembly.insert_assembly_into_codes_file(codes_file_location,
         os.path.join(asm_path, "DeclareScratchMemory.asm"),
-        0x8029e49c, scratch_memory_dict)
+        0x80156758, scratch_memory_dict)
 
     # Add secondary save file codes
     lib.secondary_save_file.apply_secondary_save_file_codes(
