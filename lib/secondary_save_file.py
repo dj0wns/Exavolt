@@ -52,3 +52,9 @@ def apply_secondary_save_file_codes(
       os.path.join(asm_path, "SaveSecondarySaveFileMemoryToDisk.asm"),
       0x8019cd74,
       memory_dict)
+
+  # Code to load file
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "LoadSecondarySaveFileFromDisk.asm"),
+      0x8019cbb4,
+      memory_dict)

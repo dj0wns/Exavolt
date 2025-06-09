@@ -8,7 +8,7 @@
 
 ## CONSTANTS
 fres_AlignedAllocAndZero=0x8028fac8
-SAVE_VERSION=1
+SAVE_VERSION=2
 
 ## MACROS
 .macro call addr #cool call macro from minty for constant references to functions
