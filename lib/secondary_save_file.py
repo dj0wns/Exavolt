@@ -58,3 +58,15 @@ def apply_secondary_save_file_codes(
       os.path.join(asm_path, "LoadSecondarySaveFileFromDisk.asm"),
       0x8019cbb4,
       memory_dict)
+
+  # Code to hide excess files
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "HideSecondaryProfilesFromMenues.asm"),
+      0x802bf6e0,
+      memory_dict)
+
+  # Code to prevent counting extra files
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "SkipCountSecondaryProfiles.asm"),
+      0x802be3f0,
+      memory_dict)
