@@ -13,7 +13,7 @@ def default_scratch_memory_entries(memory_offset):
      "size": 32}, # Used for save files to make the secondary file unique - each characters is 2 bytes!
   ]
   ret_dict = {
-    'SCRATCH_MEMORY_POINTER':'0x800032b0',
+    'SCRATCH_MEMORY_POINTER':'0x8000333c',
     # 512 KB secondary save file should be larger than our needs
     'SECONDARY_SAVE_FILE_SIZE':'0x00080000'
   }
