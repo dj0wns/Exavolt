@@ -211,6 +211,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         scratch_memory_dict,
         asm_path,
         codes_file_location)
+    print(scratch_memory_dict)
 
     iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
     lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
