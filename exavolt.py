@@ -79,6 +79,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   # first add default mods
   # These mods add baseline new functionality to metal arms mods and this allows modders to assume the user has access to these.
   mod_metadatas = lib.metadata_loader.collect_mods(os.path.join(os.path.dirname(os.path.realpath(__file__)),"default_mods"))
+
+  for metadata in mod_metadatas:
+    # tag these mods as default
+    metadata.is_default = True
+
   try:
     if files is None or not len(files):
       mod_metadatas += lib.metadata_loader.collect_mods(mod_folder)
@@ -86,21 +91,30 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       mod_metadatas += lib.metadata_loader.collect_mods_from_files(files)
 
     for metadata in mod_metadatas:
+      summary = metadata.summary()
+      #add hacks
+      for hack in summary["Hacks Required"]:
+        hacks.add(hack)
       # see if there are any assembly injections, if so need to expand the dol
       if metadata.has_assembly_files:
         has_assembly_files = True
         print("Injecting assembly")
-        break
 
 
     for metadata in mod_metadatas:
+      if metadata.is_default:
+        # Skip default mods which arent explicitly mentioned
+        print (metadata.title, hacks)
+        if metadata.title not in hacks:
+          continue
       summary = metadata.summary()
       print(summary)
       campaign_level_count = summary["Campaign Levels"]
       mp_level_count = summary["Multiplayer Levels"]
-      #add hacks
-      for hack in summary["Hacks Required"]:
-        hacks.add(hack)
+      #add global scratch memory entries
+      for entry in summary["Scratch memory entries"]:
+        if entry['global']:
+          lib.scratch_memory.add_entry_to_dict(entry, scratch_memory_dict, scratch_memory_size)
       #add csv edits
       for csv_edit in summary["CSV Edits"]:
         csv_edits.append(csv_edit)
@@ -128,6 +142,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   try:
     #apply dol hacks
     for hack in hacks:
+      if lib.hacks.HACKS[hack] == True:
+        # These are fake hacks that are actually default mods.
+        continue
       print(f'Applying {hack}')
       lib.dol.apply_hack(dol, lib.hacks.HACKS[hack])
   except Exception:

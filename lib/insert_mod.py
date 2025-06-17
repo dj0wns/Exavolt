@@ -172,7 +172,9 @@ def insert_mod(metadata, iso_dir, first_sp_level_index, first_mp_level_index, do
   local_scratch_memory_replacement_dict = default_scratch_memory_entries.copy()
 
   for entry in metadata.scratch_memory_entries:
-    add_entry_to_dict(entry, local_scratch_memory_replacement_dict, memory_offset)
+    if not entry['global']:
+      # Global entries handled earlier in the process
+      add_entry_to_dict(entry, local_scratch_memory_replacement_dict, memory_offset)
 
   # map of files that get replaced, usually level names
   replacement_map = {}

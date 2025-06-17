@@ -14,4 +14,6 @@ DISABLE_HUD_CREATE = [
 
 HACKS = {
   "extended_heap" : EXTENDED_HEAP,
+  "MeshReplace Extensions" : True,
+  "Shield Extensions" : True,
 }

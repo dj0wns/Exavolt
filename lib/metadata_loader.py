@@ -33,6 +33,7 @@ class ModMetadata:
   def __init__(self, zip_file_path):
     self.title = ""
     self.author = ""
+    self.is_default = False
     self.zip_file_path = zip_file_path
     self.has_assembly_files = False
     self.hacks_required = []
@@ -274,6 +275,8 @@ class ModMetadata:
           raise KeyError('scratch_memory[' + str(index) + ']')
         if 'size' not in mod:
           raise KeyError('scratch_memory[' + str(index) + ']')
+        if 'global' not in mod:
+          mod['global'] = False
         self.scratch_memory_entries.append(mod)
         index += 1
 
