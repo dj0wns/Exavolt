@@ -66,7 +66,7 @@
 | Field Name | Type | Notes |
 | ---------- | ---- | ----- |
 | opcode | String | [REQUIRED] Gecko opcode hex string in the form 04xxxxxx |
-| injection\_location | String | [REQUIRED] Hex String in the form xxxxxxxx to be applied by the opcode |
+| content | String | [REQUIRED] Hex String in the form xxxxxxxx to be applied by the opcode |
 
 # CUSTOM\_INVENTORY options #
 
