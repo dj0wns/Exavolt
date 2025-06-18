@@ -4,7 +4,8 @@
 | ---------- | ---- | ----- |
 | title | String | [REQUIRED] Title of your mod |
 | author | String | [REQUIRED] Author's name |
-| hacks\_required | list(Hack) | See lib/hacks.py for the list |
+| hacks\_required | list(Hack) | See lib/hacks.py for the list, this also includes default mods now, they won't be applied unless a mod has them in this list. |
+| scratch_memory | list(SCRATCH\_MEMORY) | Gives the mod a unique space in the exavolt managed scratch memory to store information between runs. This can be referenced by name as a jinja template in asm files. |
 | csv_edits | list(CSV\_EDIT) | Edits to CSV files, doing them this way reduces liklihood of collision with other mods. These are applied after all files are replaced. |
 | other\_mst\_files | list(String) | Currently unused, add [ "\_\_ALL\_\_" ] to be safe for future versions |
 | non\_mst\_files | list(String) |  Currently unused, list all non mst files to be added to ise to be safe for future versions |
@@ -44,6 +45,14 @@
 | value | Any | [REQUIRED] If "replace" then a single value to replace, if "add_line" then a list of values to append to the end of the file |
 | col | Any | [REQUIRED if "replace"] What column to replace |
 | row | Any | [REQUIRED if "replace"] What row to replace |
+
+# SCRATCH\_MEMORY options #
+
+| Field Name | Type | Notes |
+| ---------- | ---- | ----- |
+| name | String | [REQUIRED] The name of the jinja template string used for this memory sector. |
+| size | int | [REQUIRED] Size in bytes of the requested piece of scratch memory. |
+| global | bool | [DEFAULT FALSE] When true this means other mods can access the jinja template defined in name, otherwise it is local to this mod package. |
 
 # ASSEMBLY\_FILE options #
 
