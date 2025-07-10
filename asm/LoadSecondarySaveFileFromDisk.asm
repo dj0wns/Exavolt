@@ -8,6 +8,7 @@
 
 ## CONSTANTS
 read_profile=0x802bf780
+create_profile=0x802bf1e4
 base_player_profile_address=0x804169bc
 
 ## MACROS
@@ -107,6 +108,34 @@ lwz r3, 0x6868(r31)
 
 # Call write profile!!!
 call read_profile
+
+# Check if we successfully loaded, if not create a new profile
+cmpwi r3, 0
+
+beq END
+
+# Unsuccessful load so make a new profile!
+# Set up arguments, saving name in modified name buffer simplifies this since we
+# can still call it
+
+# Now we can index in to the save file memory
+lis r5, {{ SECONDARY_SAVE_FILE_SIZE }}@h
+ori r5, r5, {{ SECONDARY_SAVE_FILE_SIZE }}@l
+
+# Move r6 (player name string) to r4 to prep arguments
+lis r6, {{ MODIFIED_NAME_BUFFER }}@h
+ori r6, r6, {{ MODIFIED_NAME_BUFFER }}@l
+add r4, r6, r4 # new name buffer
+
+# Load the device id
+lwz r3, 0x6868(r31)
+
+# Call write profile!!!
+call create_profile
+
+# Now init the save file memory since its not yet init for this profile
+
+END:
 
 # command we are replacing!!!
 li r3, 0x1

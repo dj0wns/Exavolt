@@ -69,7 +69,8 @@ def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_re
     data = original.read()
 
   # Apply jinja scratch memory overrides
-  environment = jinja2.Environment()
+  path = Path(__file__).parent / 'macros'
+  environment = jinja2.Environment(loader=jinja2.FileSystemLoader(path))
   template = environment.from_string(data)
   data = template.render(jinja_replacement_dict)
 
