@@ -3,6 +3,7 @@ import os
 from .assembly import insert_assembly_into_codes_file
 from .util import add_entry_to_dict
 
+SAVE_FILE_VERSION = 3
 
 def save_file_layout_common_offsets():
   default_save_file_entries = [
@@ -27,6 +28,7 @@ def save_file_layout_common_offsets():
   ret_dict = {}
   for entry in default_save_file_entries:
     add_entry_to_dict(entry, ret_dict, mem_offset)
+  ret_dict['SAVE_FILE_VERSION'] = 3
   return ret_dict
 
 def apply_secondary_save_file_codes(

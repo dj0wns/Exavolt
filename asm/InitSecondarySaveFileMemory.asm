@@ -8,7 +8,7 @@
 ## Inject at 0x8015675c - after initializing the normal memory
 
 ## CONSTANTS
-fres_AlignedAllocAndZero=0x8028fac8
+fnew=0x8028fa88
 
 ## MACROS
 .macro call addr #cool call macro from minty for constant references to functions
@@ -23,7 +23,7 @@ ori r3, r3, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 mulli r3, r3, 4 # 4 players!
 li r4, 0x4
 
-call fres_AlignedAllocAndZero
+call fnew
 
 ## Now store the result to SCRATCH_MEMORY_POINTER[SAVE_FILE_POINTER]
 

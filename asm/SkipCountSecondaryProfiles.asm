@@ -8,7 +8,7 @@
 
 
 ## MACROS
-.macro call addr #cool call macro from minty for constant references to functions
+.macro call addr
   lis r12,  \addr@h
   ori r12, r12, \addr@l
   mtlr r12

@@ -4,7 +4,9 @@
 # This code is functionally identical to the save profile code.
 ###########################################################
 
-## Inject at 0x8019cba8
+## Inject at 0x8019cbb4
+
+{% import "SaveFileDefaults.asm" as sfd -%}
 
 ## CONSTANTS
 read_profile=0x802bf780
@@ -134,6 +136,16 @@ lwz r3, 0x6868(r31)
 call create_profile
 
 # Now init the save file memory since its not yet init for this profile
+# TODO we dont know the real index of the player so pass r5 as a dummy to assume we are just profile 1, likely breaks in mp
+li r5, 0
+
+{{ sfd.SaveFileDefaults("r5",
+    SCRATCH_MEMORY_POINTER,
+    SAVE_FILE_POINTER,
+    SECONDARY_SAVE_FILE_SIZE,
+    SAVE_FILE_OFFSET_VERSION,
+    SAVE_FILE_VERSION) }}
+
 
 END:
 
