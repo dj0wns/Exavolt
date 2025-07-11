@@ -11,6 +11,7 @@
 ## CONSTANTS
 read_profile=0x802bf780
 create_profile=0x802bf1e4
+write_profile=0x802bf928
 base_player_profile_address=0x804169bc
 
 ## MACROS
@@ -88,7 +89,7 @@ ori r7, r7, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 # Move r6 (player name string) to r4 to prep arguments
 lis r6, {{ MODIFIED_NAME_BUFFER }}@h
 ori r6, r6, {{ MODIFIED_NAME_BUFFER }}@l
-add r12, r6, r4 # new name buffer
+add r20, r6, r4 # new name buffer
 
 # multiply the player index by the size to find the offset
 mullw r5, r5, r7
@@ -98,12 +99,13 @@ lis r3, {{ SAVE_FILE_POINTER }}@h
 ori r3, r3, {{ SAVE_FILE_POINTER }} @l
 add r4, r3, r4
 lwz r4, 0(r4) # make sure to load the save file pointer!
+or r19, r4, r4 # save for later
 
 # And add to the base pointer and now we have the memory offset
 add r6, r4, r5
 
 # And now fix the name
-or r4, r12, r12
+or r4, r20, r20
 
 # Load the device id
 lwz r3, 0x6868(r31)
@@ -124,13 +126,11 @@ beq END
 lis r5, {{ SECONDARY_SAVE_FILE_SIZE }}@h
 ori r5, r5, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 
-# Move r6 (player name string) to r4 to prep arguments
-lis r6, {{ MODIFIED_NAME_BUFFER }}@h
-ori r6, r6, {{ MODIFIED_NAME_BUFFER }}@l
-add r4, r6, r4 # new name buffer
-
 # Load the device id
 lwz r3, 0x6868(r31)
+
+# Player name string
+or r4, r20, r20
 
 # Call write profile!!!
 call create_profile
@@ -146,6 +146,27 @@ li r5, 0
     SAVE_FILE_OFFSET_VERSION,
     SAVE_FILE_VERSION) }}
 
+
+# Now we need to save to file to make sure the player has a valid save file
+
+# Load the device id
+lwz r3, 0x6868(r31)
+
+# get name
+or r4, r20, r20
+
+# null for some reason
+li r5, 0
+
+# Memory offset
+or r6, r19, r19
+
+# save size
+lis r7, {{ SECONDARY_SAVE_FILE_SIZE }}@h
+ori r7, r7, {{ SECONDARY_SAVE_FILE_SIZE }}@l
+
+# Call write profile!!!
+call write_profile
 
 END:
 
