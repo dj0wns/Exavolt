@@ -17,6 +17,18 @@ class CodeTypes(Enum) :
   STANDARD = 0
   CUSTOM_RETURN = 1
 
+def create_debug_header(file, address):
+  # Add debugger string with name and other info
+  debug_header = f' CODE_INJECTION_HEADER {file} --- insert at 0x{hex(address)} START: '
+  # 3 here because of the null termination i believe
+  while len(debug_header) % 4 != 3:
+    debug_header += '\0'
+
+  # add data type
+  debug_header = f'b JUMP_OVER_DEBUG_STRING\n.string "{debug_header}"\nJUMP_OVER_DEBUG_STRING:\n'
+  return debug_header
+
+
 def assemble_code_to_bytes(file):
   # Pyiiashm modifies the original file for formatting sake so move the input file to a temp dir.
   tmpdir = Path(tempfile.mkdtemp(prefix="pyiiasmh-"))
@@ -68,6 +80,9 @@ def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_re
   with open(file, 'r') as original:
     data = original.read()
 
+  # Add debugger string with name and other info
+  data = create_debug_header(file, address) + data
+
   # Apply jinja scratch memory overrides
   path = Path(__file__).parent / 'macros'
   environment = jinja2.Environment(loader=jinja2.FileSystemLoader(path))
@@ -102,8 +117,7 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
   with open(file, 'r') as original:
     data = original.read()
 
-  data = level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
-
+  data = create_debug_header(file, address) + level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
 
   # Apply jinja scratch memory overrides
   environment = jinja2.Environment()
