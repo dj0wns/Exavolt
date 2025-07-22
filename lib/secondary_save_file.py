@@ -49,6 +49,12 @@ def apply_secondary_save_file_codes(
       0x8019cd40,
       memory_dict)
 
+  # Code to delete save file
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "DeleteSecondarySaveFile.asm"),
+      0x8019ce08,
+      memory_dict)
+
   # Code to save file
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "SaveSecondarySaveFileMemoryToDisk.asm"),
