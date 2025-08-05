@@ -16,6 +16,7 @@ from enum import Enum
 class CodeTypes(Enum) :
   STANDARD = 0
   CUSTOM_RETURN = 1
+  IMMEDIATE_EXECUTION = 2
 
 def create_debug_header(file, address):
   # Add debugger string with name and other info
@@ -25,7 +26,15 @@ def create_debug_header(file, address):
     debug_header += '\0'
 
   # add data type
-  debug_header = f'b JUMP_OVER_DEBUG_STRING\n.string "{debug_header}"\nJUMP_OVER_DEBUG_STRING:\n'
+  # Extra jumps to prevent off by 1 errors from breaking execution.
+  # Lazy safeguard.
+  debug_header = (
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'.string "{debug_header}"\n'
+    f'JUMP_OVER_DEBUG_STRING:\n')
   return debug_header
 
 
@@ -63,6 +72,15 @@ def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_ty
     dol_writer.write(bytes)
 
 # code type is the enum declared above
+def insert_immediate_exec_bytes_into_codes_file(codes_file_location, bytes, include_type = True):
+  # now inject the code into the dol
+  with open(codes_file_location, "ab") as dol_writer:
+    if include_type:
+      dol_writer.write(struct.pack(">I", CodeTypes.IMMEDIATE_EXECUTION.value))
+    dol_writer.write(struct.pack(">I", len(bytes)))
+    dol_writer.write(bytes)
+
+# code type is the enum declared above
 def insert_code_with_explicit_return_address_into_codes_file(codes_file_location, file, address, return_address):
   bytes = assemble_code_to_bytes(file)
   # now inject the code into the dol
@@ -73,7 +91,7 @@ def insert_code_with_explicit_return_address_into_codes_file(codes_file_location
     dol_writer.write(struct.pack(">I", return_address))
     dol_writer.write(bytes)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_replacement_dict, include_type = True):
+def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_replacement_dict, include_type = True, immediate_exec = False):
 
   result_file = file + '.tmp'
   # Read in the file to apply the template code
@@ -93,7 +111,10 @@ def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_re
     new_file.write(data)
 
   bytes = assemble_code_to_bytes(result_file)
-  insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
+  if immediate_exec:
+    insert_immediate_exec_bytes_into_codes_file(codes_file_location, bytes, include_type)
+  else:
+    insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
 
 def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index, jinja_replacement_dict):
   level_switch_code = f"""

@@ -10,7 +10,15 @@
 #   - Type 0x1: C2 code with custom return address
 #     | 4 Bytes     | 4 Bytes           | 4 Bytes        | N Bytes        |
 #     | Code Length | Insertion Address | Return address | Assembled Code |
+#   - Type 0x2: C2 code that gets executed immediately, and is never linked, will live on as an inaccessible fragment in memory.
+#     | 4 Bytes     | N Bytes        |
+#     | Code Length | Assembled Code |
 ################################################################################
+
+## FOR IMMEDIATE EXECUTION CODE: DON't USE THE FOLLOWING REGISTERS ##
+## r14, r15, r16, r17, r18, r19, r21, r22
+
+##
 
 ## Inject at 0x8029e468
 
@@ -112,6 +120,8 @@ cmpwi r3, 0 # STANDARD CODE
 beq STANDARD_CODE
 cmpwi r3, 1 # Custom return value code
 beq CUSTOM_RETURN_CODE
+cmpwi r3, 2 # Instantly executed code
+beq INSTANT_EXECUTE_CODE
 
 #no codes should exist here so it probably crashes... lmao
 
@@ -213,6 +223,54 @@ lwz r4, 0(r21) # byte length
 li r6, 0
 li r7, 0
 call ffile_Read
+
+b LOOP_START
+
+INSTANT_EXECUTE_CODE:
+# read byte count
+or r3, r22, r22 # file handle
+li r4, 0x4
+or r5, r21, r21 #int buffer
+li r6, 0
+li r7, 0
+call ffile_Read
+
+# declare memory for code
+lis r3, 0x8049 #class address for fmem i guess
+ori r3, r3, 0xf2f0
+lwz r4, 0(r21) # byte length
+addi r4, r4, 0x4 # we are doing long jumps so add in space to long jump
+li r5, 4 #alignment maybe?
+call fmem_AllocAndZero
+or r5, r3, r3 #move new code buffer to proper arg position and save for macro
+or r23, r3, r3 # Save code buffer for later.
+
+## Use a branch and link to get the current code position in the LR
+bl AUTORUN_LINK_LABEL
+
+AUTORUN_LINK_LABEL:
+mflr r4
+## now need to add an offset to represent the amount of code executed 
+addi r4, r4, AUTORUN_RETURN_LOCATION - AUTORUN_LINK_LABEL
+
+# Now update jump register to return!
+lwz r7, 0(r21) # byte length
+add r7, r5, r7 #add byte length to offset
+jump r7, r4
+
+# now read bytes into buffer
+or r3, r22, r22 # file handle
+lwz r4, 0(r21) # byte length
+# r5 already where it needs to go
+li r6, 0
+li r7, 0
+call ffile_Read
+
+# Execute code
+mtlr r23
+blr
+
+AUTORUN_RETURN_LOCATION:
 
 b LOOP_START
 

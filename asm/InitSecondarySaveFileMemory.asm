@@ -5,7 +5,7 @@
 # region and also allow for more flexibilty in inventory specs etc.
 ###########################################################
 
-## Inject at 0x8015675c - after initializing the normal memory
+## Execute immediately!
 
 ## CONSTANTS
 fnew=0x8028fa88
@@ -35,7 +35,4 @@ lis r12, {{ SAVE_FILE_POINTER }}@h
 ori r12, r12, {{SAVE_FILE_POINTER }} @l
 add r12, r4, r12
 stw r3, 0(r12)
-
-# command we are replacing!!!
-li r31, 0
 

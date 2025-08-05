@@ -37,8 +37,8 @@ def apply_secondary_save_file_codes(
     codes_file_location):
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "InitSecondarySaveFileMemory.asm"),
-      0x8015675c,
-      memory_dict)
+      0,
+      memory_dict, immediate_exec=True)
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "SetDefaultSaveFileValues.asm"),
       0x8019ca94,
