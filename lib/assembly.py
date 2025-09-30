@@ -382,7 +382,7 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   insertion_address = 0x80197dd4
   return_address = 0x80197fb4
   player_spawn_code = lib.assembly_codes.HEADERS
-  for i in range(1,58):
+  for i in range(len(level_bot_map)):
     code_string = ""
     level_prefix = f"LEVEL_{i}_PREFIX_"
     lower_bot_name = level_bot_map[i].lower()
@@ -392,7 +392,7 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
       # Make sure to replace generic labels to make sure they are unique
       code_string = lib.assembly_codes.BOT_NAME_DICT[lower_bot_name].replace("LABEL", level_prefix)
     else:
-      raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
+      raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i + 1}")
     # perform fixups for labels, allow 25 for now, this is kinda slow though so...
     # This allows for fully unique labels
     for j in range (25):
@@ -404,11 +404,13 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
         break
     # add if statements for all levels
     player_spawn_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
-        level_index=i, code_string=code_string,
-        next_label=f"PLAYER_SPAWN_LEVEL_INDEX_{i}",
+        level_index=i + 1, # 1 indexed!
+        code_string=code_string,
+        next_label=f"PLAYER_SPAWN_LEVEL_INDEX_{i+1}",
         end_label=f"END_OF_PLAYER_SPAWN_CODE")
   # add final jump code
   player_spawn_code += "\nEND_OF_PLAYER_SPAWN_CODE:\n"
+  print(player_spawn_code)
 
   # Windows wont allow 2 file handles i guess. shutil fails to work with this
   code_file = tempfile.NamedTemporaryFile(delete=False)

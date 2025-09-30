@@ -1,5 +1,9 @@
-from .dol import apply_hack
 from dataclasses import dataclass
+import struct
+import os
+
+from .assembly import insert_assembly_into_codes_file
+from .dol import apply_hack
 
 
 LEVEL_TYPES = [
@@ -134,6 +138,7 @@ LEVEL_BOT_MAP = [
 @dataclass
 class Level:
   title: str
+  starting_bot: str
   wld_resource_name: str
   #level_id: int - too be calculated at runtime, not stored
   csv_file: str
@@ -145,9 +150,66 @@ class Level:
   projector_offsets: float
   projector_range_adjustment: float
 
+
+  def get_string_offsets(self, current_offset):
+    # self code is used for the injection assembly script to notice that it needs to be modified at run time
+    offset_special_code = 0xdcba0000
+    offset = current_offset
+    ret_dict = {}
+
+    # Handle the null level or null strings in general
+    if not self.title:
+      ret_dict['name_offset'] = 0
+    else:
+      ret_dict['name_offset'] = offset + offset_special_code
+      offset += len(self.title) + 1 # null char
+
+    if not self.wld_resource_name:
+      ret_dict['wld_resource_name_offset'] = 0
+    else:
+      ret_dict['wld_resource_name_offset'] = offset + offset_special_code
+      offset += len(self.wld_resource_name) + 1 # null char
+
+    if not self.csv_file:
+      ret_dict['csv_file_offset'] = 0
+    else:
+      ret_dict['csv_file_offset'] = offset + offset_special_code
+      offset += len(self.csv_file) + 1 # null char
+
+    if not self.csv_material_file:
+      ret_dict['csv_material_file_offset'] = 0
+    else:
+      ret_dict['csv_material_file_offset'] = offset + offset_special_code
+      offset += len(self.csv_material_file)
+    # Return the new offset
+    return ret_dict, offset
+
+  def get_concatenated_strings(self):
+    return self.title + '\0' + self.csv_file + '\0' + self.csv_material_file + '\0'
+
+  def level_byte_count(self):
+    return 9 * 4
+
+  # convert to bytes before exported to game
+  def to_bytes(self, offset_dict, index):
+    bytes = bytearray()
+
+    bytes.extend(struct.pack(">I", offset_dict['name_offset']))
+    bytes.extend(struct.pack(">I", offset_dict['wld_resource_name_offset']))
+    bytes.extend(struct.pack(">I", index))
+    bytes.extend(struct.pack(">I", offset_dict['csv_file_offset']))
+    bytes.extend(struct.pack(">I", offset_dict['csv_material_file_offset']))
+    bytes.extend(struct.pack(">I", self.load_ptr))
+    bytes.extend(struct.pack(">I", self.unload_ptr))
+    bytes.extend(struct.pack(">f", self.projector_offsets))
+    bytes.extend(struct.pack(">f", self.projector_range_adjustment))
+
+    return bytes
+
 DEFAULT_SP_LEVEL_ARRAY = [
   Level(
     "1 Seal the Mines",
+    "glitch",
     "WEDMmines01",
     "WEDMmines01",
     "ms_mines01",
@@ -156,9 +218,11 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     0.0,
-    1.0),
+    1.0
+  ),
   Level(
     "2 Seal the Mines",
+    "glitch",
     "WEDMmines02",
     "WEDMmines02",
     "ms_mines02",
@@ -167,9 +231,11 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     0.0,
-    1.0,
+    1.0
+  ),
   Level(
     "3 Seal the Mines",
+    "glitch",
     "WEDMmines03",
     "WEDMmines03",
     "ms_mines03",
@@ -178,9 +244,11 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     10.0,
-    4.0,
+    4.0
+  ),
   Level(
     "4 Clean Up",
+    "glitch",
     "WEDTtown_01",
     "WEDTtown_01",
     "ms_town_01",
@@ -193,6 +261,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "5 RAT race",
+    "glitch",
     "WEWTrace_01",
     "WEWTrace_01",
     "ms_race_01",
@@ -205,6 +274,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "6 Wasteland Journey",
+    "glitch",
     "WEWJjourn01",
     "WEWJjourn01",
     "ms_journ01",
@@ -215,7 +285,9 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0.0,
     1.0,
   ),
+  Level(
     "7 Wasteland Journey",
+    "glitch",
     "WEWJjourn02",
     "WEWJjourn02",
     "ms_journ02",
@@ -228,6 +300,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "8 Wasteland Journey",
+    "mozer",
     "WEWJjourn03",
     "WEWJjourn03",
     "ms_journ03",
@@ -240,6 +313,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "9 ZombieBot Boss",
+    "glitch",
     "WEWZzombi01",
     "WEWZzombi01",
     "ms_zombi01",
@@ -252,6 +326,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "10 Destroy Comm Cntr",
+    "glitch",
     "WEWCcomm_01",
     "WEWCcomm_01",
     "ms_comm_01",
@@ -264,6 +339,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "11 Destroy Comm Cntr",
+    "glitch",
     "WEWCcomm_02",
     "WEWCcomm_02",
     "ms_comm_02",
@@ -276,6 +352,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "12 Destroy Comm Cntr",
+    "glitch",
     "WEWCcomm_03",
     "WEWCcomm_03",
     "ms_comm_03",
@@ -288,6 +365,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "13 Hold Your Ground",
+    "glitch",
     "WEWChold_01",
     "WEWChold_01",
     "ms_hold_01",
@@ -300,6 +378,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "14 R & D",
+    "glitch",
     "WEWRresrch1",
     "WEWRresrch1",
     "ms_resrch1",
@@ -312,6 +391,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "15 R & D",
+    "glitch",
     "WEWRresrch2",
     "WEWRresrch2",
     "ms_resrch2",
@@ -324,6 +404,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "16 R & D",
+    "glitch",
     "WEWRresrch3",
     "WEWRresrch3",
     "ms_resrch3",
@@ -336,6 +417,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "17 R & D",
+    "krunk",
     "WEWRresrch4",
     "WEWRresrch4",
     "ms_resrch4",
@@ -348,6 +430,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "18 Wasteland Chase",
+    "glitch",
     "WEWHchase01",
     "WEWHchase01",
     "ms_chase01",
@@ -358,8 +441,9 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0.0,
     1.0,
   ),
-    Level(
+  Level(
     "19 Morbot Region",
+    "glitch",
     "WERMmorbot1",
     "WERMmorbot1",
     "ms_morbot1",
@@ -372,6 +456,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "20 Morbot Region",
+    "glitch",
     "WERMmorbot2",
     "WERMmorbot2",
     "ms_morbot2",
@@ -384,6 +469,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "21 Reactor",
+    "glitch",
     "WERRreactr1",
     "WERRreactr1",
     "ms_reactr1",
@@ -396,6 +482,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "22 Reactor",
+    "slosh",
     "WERRreactr2",
     "WERRreactr2",
     "ms_reactr2",
@@ -408,6 +495,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "23 Mil City Hub",
+    "glitch",
     "WEMCcity_01",
     "WEMCcity_01",
     "ms_city_01",
@@ -420,6 +508,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "24 Mil City Hub",
+    "glitch",
     "WEMCcity_03",
     "WEMCcity_03",
     "ms_city_03",
@@ -432,6 +521,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "25 Spy vs. Spy",
+    "glitch",
     "WECFfacty01",
     "WECFfacty01",
     "ms_facty01",
@@ -444,6 +534,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "26 Ruins",
+    "glitch",
     "WEMCcity_05",
     "WEMCcity_05",
     "ms_city_05",
@@ -456,6 +547,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "27 Ruins",
+    "glitch",
     "WECRruins01",
     "WECRruins01",
     "ms_ruins01",
@@ -468,6 +560,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "28 Ruins",
+    "glitch",
     "WECRruins02",
     "WECRruins02",
     "ms_ruins02",
@@ -480,6 +573,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "29 Secret Rendezvous",
+    "glitch",
     "WEMCcity_02",
     "WEMCcity_02",
     "ms_city_02",
@@ -492,6 +586,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "30 Night Sneak",
+    "glitch",
     "WECDsneak01",
     "WECDsneak01",
     "ms_sneak01",
@@ -504,6 +599,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "31 Night Sneak",
+    "glitch",
     "WECDsneak02",
     "WECDsneak02",
     "ms_sneak02",
@@ -516,6 +612,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "32 Invasion",
+    "glitch",
     "WEDiinvas01",
     "WEDiinvas01",
     "ms_invas01",
@@ -528,6 +625,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "33 Coliseum",
+    "glitch",
     "WEBCcolis01",
     "WEBCcolis01",
     "ms_colis01",
@@ -540,6 +638,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "34 Coliseum",
+    "glitch",
     "WEBCcolis02",
     "WEBCcolis02",
     "ms_colis02",
@@ -552,6 +651,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "35 Coliseum",
+    "glitch",
     "WEBCcolis03",
     "WEBCcolis03",
     "ms_colis03",
@@ -564,6 +664,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "36 Coliseum",
+    "glitch",
     "WEBCcolis04",
     "WEBCcolis04",
     "ms_colis04",
@@ -576,6 +677,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "37 Race to the Rocket",
+    "glitch",
     "WEWKrockt01",
     "WEWKrockt01",
     "ms_rockt01",
@@ -588,6 +690,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "38 Space Dock",
+    "glitch",
     "WESHhangr01",
     "WESHhangr01",
     "ms_hangr01",
@@ -600,6 +703,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "39 Space Station",
+    "glitch",
     "WESSstatn01",
     "WESSstatn01",
     "ms_statn01",
@@ -612,6 +716,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "40 Space Station",
+    "glitch",
     "WESSstatn02",
     "WESSstatn02",
     "ms_statn02",
@@ -624,6 +729,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "41 Gen. Corrosive",
+    "glitch",
     "WESRrepair1",
     "WESRrepair1",
     "ms_repair1",
@@ -636,6 +742,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
   ),
   Level(
     "42 Final Battle",
+    "glitch",
     "WESCcorros1",
     "WESCcorros1",
     "ms_corros1",
@@ -646,12 +753,248 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0.0,
     1.0,
   ),
+]
 
-],
+DEFAULT_MP_LEVEL_ARRAY = [
+  Level(
+    "1 Big E",
+    "glitch",
+    "WE01multi01",
+    "WE01multi01",
+    "ms_mp_01",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "2 Spy v Spy",
+    "glitch",
+    "WE02multi02",
+    "WE02multi02",
+    "ms_mp_02",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "3 Tanks Alot",
+    "glitch",
+    "WE03multi03",
+    "WE03multi03",
+    "ms_mp_03",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "4 MacMines",
+    "glitch",
+    "WE05multi05",
+    "WE05multi05",
+    "ms_mp_05",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "5 Inferno Machine",
+    "glitch",
+    "WE11multi11",
+    "WE11multi11",
+    "ms_mp_11",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "6 Clean Up",
+    "glitch",
+    "WE15multi15",
+    "WE15multi15",
+    "ms_mp_15",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "7 Trenches",
+    "glitch",
+    "WE08multi08",
+    "WE08multi08",
+    "ms_mp_08",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "8 Comm AAGun",
+    "glitch",
+    "WE12multi12",
+    "WE12multi12",
+    "ms_mp_12",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "9 Morbotland",
+    "glitch",
+    "WE14multi14",
+    "WE14multi14",
+    "ms_mp_14",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "10 Reactor",
+    "glitch",
+    "WE09multi09",
+    "WE09multi09",
+    "ms_mp_09",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "11 Lost Boss",
+    "glitch",
+    "WE10multi10",
+    "WE10multi10",
+    "ms_mp_10",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "12 Ruins",
+    "glitch",
+    "WE07multi07",
+    "WE07multi07",
+    "ms_mp_07",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "13 Coliseum",
+    "glitch",
+    "WE04multi04",
+    "WE04multi04",
+    "ms_mp_04",
+    0x80143cd4,
+    0x80143fa0,
+    0x80145900,
+    00000000,
+    0.0,
+    1.0,
+  ),
+  Level(
+    "14 Corrosive City",
+    "glitch",
+    "WE06multi06",
+    "WE06multi06",
+    "ms_mp_06",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  )
+]
+
+NULL_LEVEL = Level(
+    "",
+    "glitch",
+    "",
+    "",
+    "",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    0.0,
+  )
+
+
+def level_array_to_bytes(level_array):
+  level_buffer = bytearray()
+  string_buffer = []
+  # add 4 bytes for some buffer
+  string_offset = level_array[0].level_byte_count() * len(level_array) + 4
+  index = 0
+  for level in level_array:
+    offset_dict, string_offset = level.get_string_offsets(string_offset)
+    for k,v in offset_dict.items():
+      print(k, hex(v))
+    print(string_offset)
+    level_buffer += level.to_bytes(offset_dict, index)
+    string_buffer += level.get_concatenated_strings()
+    # increment index!
+    index += 1
+
+  # Convert to assembly string
+  bytes_written = 0
+  out_string = ""
+  for byte in level_buffer:
+    out_string += f'.byte {byte}\n'
+    bytes_written += 1
+  for i in range(4):
+    out_string += f'.byte 0x0\n'
+    bytes_written += 1
+  for byte in string_buffer:
+    out_string += f'.byte {ord(byte)}\n'
+    bytes_written += 1
+  out_string += f'.byte 0x0\n'
+  bytes_written += 1
+
+  while (bytes_written % 4) != 0:
+    out_string += f'.byte 0x0\n'
+    bytes_written += 1
+
+  return out_string
 
 def apply_level_count_overrides(dol, sp_count, mp_count):
-  cmpwi = 0x2c170000 + count
-  cmplwi = 0x28000000 + count
+  cmpwi = 0x2c170000 + sp_count
+  cmplwi = 0x28000000 + sp_count
 
 
   # Everywhere i can find where level count is referred to in code
@@ -668,5 +1011,23 @@ def apply_level_count_overrides(dol, sp_count, mp_count):
   apply_hack(dol, [0x0415903c, cmplwi + mp_count])
   apply_hack(dol, [0x04158f8c, cmplwi + mp_count])
 
-  # TODO ASM CODE FOR AUTO EXECUTE
+def apply_level_array_codes(
+    dol,
+    memory_dict,
+    asm_path,
+    codes_file_location,
+    sp_array,
+    mp_array):
+
+  local_dict = memory_dict.copy()
+  local_dict['LEVEL_ARRAY_RAW'] = level_array_to_bytes(sp_array + mp_array + [NULL_LEVEL])
+
+  # No mp yet!
+  apply_level_count_overrides(dol, len(sp_array), len(mp_array) - 1)
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "CopyLevelArrayToMemory.asm"),
+      0,
+      local_dict,
+      immediate_exec=True)
 

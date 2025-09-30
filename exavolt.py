@@ -57,6 +57,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   scratch_memory_dict = lib.scratch_memory.default_scratch_memory_entries(scratch_memory_size)
 
   player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
+  sp_level_list = lib.level.DEFAULT_SP_LEVEL_ARRAY.copy()
+  mp_level_list = lib.level.DEFAULT_MP_LEVEL_ARRAY.copy()
+
   level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
   level_invent_dict_list = level_invent_dict_list_initial.copy()
   try:
@@ -168,19 +171,18 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     raise ValueError("Error applying csv edits")
 
   try:
-    # Insert bot type spawning if the list has any changes
-    if player_bot_list != lib.level.LEVEL_BOT_MAP:
-      print("Inserting player bot modifications")
-      has_assembly_files = True
-      lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
-      lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
+    # Always insert bot type spawning
+    print("Inserting player bot modifications")
+    #has_assembly_files = True
+    #lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
+    #player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
+    #lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
 
-    # Insert bot type spawning if the list has any changes
+    # Insert player invent changes
     if level_invent_dict_list != level_invent_dict_list_initial:
       print("Inserting player inventory modifications")
       has_assembly_files = True
       lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
-
 
     asm_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm")
 
@@ -211,6 +213,15 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         scratch_memory_dict,
         asm_path,
         codes_file_location)
+
+    # Override level array!
+    lib.level.apply_level_array_codes(
+        dol,
+        scratch_memory_dict,
+        asm_path,
+        codes_file_location,
+        sp_level_list,
+        mp_level_list)
 
     print(scratch_memory_dict)
 

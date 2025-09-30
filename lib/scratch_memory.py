@@ -8,7 +8,7 @@ def default_scratch_memory_entries(memory_offset):
     {"name": "SAVE_FILE_POINTER",
      "size": 4},
     {"name": "LEVEL_LIST",
-     "size": 5000}, #overreserving
+     "size": 9000}, # space for 200 levels
     {"name": "MODIFIED_NAME_BUFFER",
      "size": 32}, # Used for save files to make the secondary file unique - each characters is 2 bytes!
   ]
