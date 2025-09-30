@@ -180,15 +180,24 @@ class Level:
       ret_dict['csv_material_file_offset'] = 0
     else:
       ret_dict['csv_material_file_offset'] = offset + offset_special_code
-      offset += len(self.csv_material_file)
+      offset += len(self.csv_material_file) + 1 # null char
     # Return the new offset
     return ret_dict, offset
 
   def get_concatenated_strings(self):
-    return self.title + '\0' + self.csv_file + '\0' + self.csv_material_file + '\0'
+    ret_string = ""
+    if self.title:
+      ret_string += self.title + '\0'
+    if self.wld_resource_name:
+      ret_string += self.wld_resource_name + '\0'
+    if self.csv_file:
+      ret_string += self.csv_file + '\0'
+    if self.csv_material_file:
+      ret_string += self.csv_material_file + '\0'
+    return ret_string
 
   def level_byte_count(self):
-    return 9 * 4
+    return 11 * 4
 
   # convert to bytes before exported to game
   def to_bytes(self, offset_dict, index):
@@ -196,11 +205,13 @@ class Level:
 
     bytes.extend(struct.pack(">I", offset_dict['name_offset']))
     bytes.extend(struct.pack(">I", offset_dict['wld_resource_name_offset']))
-    bytes.extend(struct.pack(">I", index))
+    bytes.extend(struct.pack(">i", index))
     bytes.extend(struct.pack(">I", offset_dict['csv_file_offset']))
     bytes.extend(struct.pack(">I", offset_dict['csv_material_file_offset']))
     bytes.extend(struct.pack(">I", self.load_ptr))
     bytes.extend(struct.pack(">I", self.unload_ptr))
+    bytes.extend(struct.pack(">I", self.work_ptr))
+    bytes.extend(struct.pack(">I", self.draw_ptr))
     bytes.extend(struct.pack(">f", self.projector_offsets))
     bytes.extend(struct.pack(">f", self.projector_range_adjustment))
 
@@ -940,6 +951,20 @@ DEFAULT_MP_LEVEL_ARRAY = [
   )
 ]
 
+GENERIC_LEVEL = Level(
+    "Generic",
+    "glitch",
+    "",
+    "Level01",
+    "ms_gtest_01",
+    00000000,
+    00000000,
+    00000000,
+    00000000,
+    0.0,
+    1.0,
+  )
+
 NULL_LEVEL = Level(
     "",
     "glitch",
@@ -960,7 +985,7 @@ def level_array_to_bytes(level_array):
   string_buffer = []
   # add 4 bytes for some buffer
   string_offset = level_array[0].level_byte_count() * len(level_array) + 4
-  index = 0
+  index = -1 # Generic level is -1
   for level in level_array:
     offset_dict, string_offset = level.get_string_offsets(string_offset)
     for k,v in offset_dict.items():
@@ -993,23 +1018,24 @@ def level_array_to_bytes(level_array):
   return out_string
 
 def apply_level_count_overrides(dol, sp_count, mp_count):
+
   cmpwi = 0x2c170000 + sp_count
   cmplwi = 0x28000000 + sp_count
 
 
-  # Everywhere i can find where level count is referred to in code
-  # SP OVERRIDES
-  apply_hack(dol, [0x041c87ac, cmpwi])
-  apply_hack(dol, [0x04154e10, cmpwi])
-  apply_hack(dol, [0x041c8c88, cmpwi])
-  apply_hack(dol, [0x041c8d08, cmpwi - 1])
-  apply_hack(dol, [0x04157cac, cmplwi])
-  apply_hack(dol, [0x04158faf, cmplwi])
-  # subi to subtract sp count
-  apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
-  # MP OVERRIDES
-  apply_hack(dol, [0x0415903c, cmplwi + mp_count])
-  apply_hack(dol, [0x04158f8c, cmplwi + mp_count])
+  ## Everywhere i can find where level count is referred to in code
+  ## SP OVERRIDES
+  #apply_hack(dol, [0x041c87ac, cmpwi])
+  #apply_hack(dol, [0x04154e10, cmpwi])
+  #apply_hack(dol, [0x041c8c88, cmpwi])
+  #apply_hack(dol, [0x041c8d08, cmpwi - 1])
+  #apply_hack(dol, [0x04157cac, cmplwi])
+  #apply_hack(dol, [0x04158fac, cmplwi])
+  ## subi to subtract sp count
+  #apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
+  ## MP OVERRIDES
+  #apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
+  #apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
 
 def apply_level_array_codes(
     dol,
@@ -1020,7 +1046,11 @@ def apply_level_array_codes(
     mp_array):
 
   local_dict = memory_dict.copy()
-  local_dict['LEVEL_ARRAY_RAW'] = level_array_to_bytes(sp_array + mp_array + [NULL_LEVEL])
+  local_dict['LEVEL_ARRAY_RAW'] = level_array_to_bytes(
+      [GENERIC_LEVEL] + # Level array starts with this
+      sp_array +
+      mp_array +
+      [NULL_LEVEL]) # Level array ends with this
 
   # No mp yet!
   apply_level_count_overrides(dol, len(sp_array), len(mp_array) - 1)

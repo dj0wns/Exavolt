@@ -11,6 +11,10 @@ def default_scratch_memory_entries(memory_offset):
      "size": 9000}, # space for 200 levels
     {"name": "MODIFIED_NAME_BUFFER",
      "size": 32}, # Used for save files to make the secondary file unique - each characters is 2 bytes!
+    {"name": "LEVEL_ARRAY_OFFSET",
+     "size": 4}, # Offset in memory to the new level array! Hacky because it can
+     # be derived by looking at the address above but I was on a flight so....
+     # No google = no good assembly.
   ]
   ret_dict = {
     'SCRATCH_MEMORY_POINTER':'0x8000333c',
