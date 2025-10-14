@@ -1017,25 +1017,27 @@ def level_array_to_bytes(level_array):
 
   return out_string
 
+
+
 def apply_level_count_overrides(dol, sp_count, mp_count):
 
   cmpwi = 0x2c170000 + sp_count
   cmplwi = 0x28000000 + sp_count
 
 
-  ## Everywhere i can find where level count is referred to in code
-  ## SP OVERRIDES
-  #apply_hack(dol, [0x041c87ac, cmpwi])
-  #apply_hack(dol, [0x04154e10, cmpwi])
-  #apply_hack(dol, [0x041c8c88, cmpwi])
-  #apply_hack(dol, [0x041c8d08, cmpwi - 1])
-  #apply_hack(dol, [0x04157cac, cmplwi])
-  #apply_hack(dol, [0x04158fac, cmplwi])
-  ## subi to subtract sp count
-  #apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
-  ## MP OVERRIDES
-  #apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
-  #apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
+  # Everywhere i can find where level count is referred to in code
+  # SP OVERRIDES
+  apply_hack(dol, [0x041c87ac, cmpwi])
+  apply_hack(dol, [0x04154e10, cmpwi])
+  apply_hack(dol, [0x041c8c88, cmpwi])
+  apply_hack(dol, [0x041c8d08, cmpwi - 1])
+  apply_hack(dol, [0x04157cac, cmplwi])
+  apply_hack(dol, [0x04158fac, cmplwi])
+  # subi to subtract sp count
+  apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
+  # MP OVERRIDES
+  apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
+  apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
 
 def apply_level_array_codes(
     dol,
