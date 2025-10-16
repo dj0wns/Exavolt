@@ -74,6 +74,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   except Exception:
     raise IsoExtractionException()
 
+  lib.level.init_default_levels(tmp_dir_name)
+
   has_assembly_files = False
   stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
   pathlib.Path(stage2_file_location).touch()
@@ -214,6 +216,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         asm_path,
         codes_file_location)
 
+    iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
+
     # Override level array!
     lib.level.apply_level_array_codes(
         dol,
@@ -221,11 +225,12 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         asm_path,
         codes_file_location,
         sp_level_list,
-        mp_level_list)
+        mp_level_list,
+        tmp_dir_name,
+        True)
 
     print(scratch_memory_dict)
 
-    iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
     lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
 
   except Exception:

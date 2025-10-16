@@ -1,10 +1,22 @@
 from dataclasses import dataclass
 import struct
 import os
+import tempfile
+import shutil
 
+from .ma_tools import mst_extract
+from .ma_tools import mst_insert
+from .ma_tools import csv_rebuilder
 from .assembly import insert_assembly_into_codes_file
 from .dol import apply_hack
+from .csv_table_reader import read_ma_csv_to_dict, write_ma_csv_to_file
 
+SP_CSV_DATA = {}
+MP_CSV_DATA = {}
+
+PICK_LEVEL_CSV_FILE = "pick_level$.csv"
+MULTI_LEVEL_CSV_FILE = "multi_lvl$.csv"
+CSV_SUFFIX = '.new'
 
 LEVEL_TYPES = [
   "campaign",
@@ -150,6 +162,22 @@ class Level:
   projector_offsets: float
   projector_range_adjustment: float
 
+  # For csv file
+  def add_level_info(self, csv_row):
+    self.location = csv_row[0]
+    self.name = csv_row[1]
+    self.screenshot = csv_row[2]
+    self.secret_chips = csv_row[3]
+    self.time_to_beat = csv_row[4]
+
+  def get_level_info(self, level_index):
+    return [self.location,
+            self.name,
+            self.screenshot,
+            self.secret_chips,
+            self.time_to_beat,
+            # is a float for some reason
+            str(level_index) + '.0']
 
   def get_string_offsets(self, current_offset):
     # self code is used for the injection assembly script to notice that it needs to be modified at run time
@@ -1039,13 +1067,95 @@ def apply_level_count_overrides(dol, sp_count, mp_count):
   apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
   apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
 
+def init_default_levels(iso_dir):
+    sp_description_dict = {
+        'pick_level_text' : 7,
+        'pick_level_meshes' : 5,
+        'pick_level_buttons' : 6,
+        'level_names' : 6,
+        'level_unlocking' : 1
+    }
+    mp_description_dict = {
+        'multi_level_text' : 7,
+        'multi_level_meshes' : 5,
+        'multi_level_buttons' : 6,
+        'deathmatchlevels' : 6,
+    }
+    # Get picklevel and multilvl out of mst and lost the info into the level array
+    tmpdirname = tempfile.TemporaryDirectory()
+    csv_dir_name = tmpdirname.name
+
+    iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
+    mst_extract.extract(iso_mst, csv_dir_name, False, PICK_LEVEL_CSV_FILE, False)
+    mst_extract.extract(iso_mst, csv_dir_name, False, MULTI_LEVEL_CSV_FILE, False)
+
+      #load in sp csv file
+    with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'r') as pick_levels:
+      sp_data = pick_levels.readlines()
+    print(sp_data)
+
+
+    #load in sp csv file
+    global SP_CSV_DATA
+    SP_CSV_DATA = read_ma_csv_to_dict(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), sp_description_dict)
+    index = 0
+    for level in SP_CSV_DATA['level_names']:
+      DEFAULT_SP_LEVEL_ARRAY[index].add_level_info(level)
+      index += 1
+
+    global MP_CSV_DATA
+    MP_CSV_DATA = read_ma_csv_to_dict(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), mp_description_dict)
+    index = 0
+    for level in MP_CSV_DATA['deathmatchlevels']:
+      DEFAULT_MP_LEVEL_ARRAY[index].add_level_info(level)
+      index += 1
+
+def fixup_single_player_csv(sp_array, iso_dir, is_gc):
+    tmpdirname = tempfile.TemporaryDirectory()
+    csv_dir_name = tmpdirname.name
+    iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
+
+    index = 0
+    level_data = []
+    for level in sp_array:
+      level_data.append(level.get_level_info(index))
+      index += 1
+    SP_CSV_DATA['level_names'] = level_data
+    write_ma_csv_to_file(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), SP_CSV_DATA)
+
+    csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX))
+    shutil.move(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE))
+    mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE)], "")
+
+def fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc):
+    tmpdirname = tempfile.TemporaryDirectory()
+    csv_dir_name = tmpdirname.name
+    iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
+
+    index = len(sp_array)
+    level_data = []
+    for level in mp_array:
+      level_data.append(level.get_level_info(index))
+      index += 1
+    MP_CSV_DATA['deathmatchlevels'] = level_data
+    write_ma_csv_to_file(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), MP_CSV_DATA)
+
+    csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX))
+    shutil.move(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
+    mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE)], "")
+
+    print(MP_CSV_DATA)
+
+
 def apply_level_array_codes(
     dol,
     memory_dict,
     asm_path,
     codes_file_location,
     sp_array,
-    mp_array):
+    mp_array,
+    iso_dir,
+    is_gc):
 
   local_dict = memory_dict.copy()
   local_dict['LEVEL_ARRAY_RAW'] = level_array_to_bytes(
@@ -1056,6 +1166,9 @@ def apply_level_array_codes(
 
   # No mp yet!
   apply_level_count_overrides(dol, len(sp_array), len(mp_array) - 1)
+
+  fixup_single_player_csv(sp_array, iso_dir, is_gc)
+  fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc)
 
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "CopyLevelArrayToMemory.asm"),
