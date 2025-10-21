@@ -1050,17 +1050,19 @@ def level_array_to_bytes(level_array):
 def apply_level_count_overrides(dol, sp_count, mp_count):
 
   cmpwi = 0x2c170000 + sp_count
+  cmpwir31 = 0x2c1f0000 + sp_count
   cmplwi = 0x28000000 + sp_count
 
 
   # Everywhere i can find where level count is referred to in code
   # SP OVERRIDES
   apply_hack(dol, [0x041c87ac, cmpwi])
-  apply_hack(dol, [0x04154e10, cmpwi])
+  apply_hack(dol, [0x04154e10, cmpwir31])
   apply_hack(dol, [0x041c8c88, cmpwi])
   apply_hack(dol, [0x041c8d08, cmpwi - 1])
   apply_hack(dol, [0x04157cac, cmplwi])
   apply_hack(dol, [0x04158fac, cmplwi])
+  apply_hack(dol, [0x0414b6fc, cmplwi])
   # subi to subtract sp count
   apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
   # MP OVERRIDES
@@ -1115,7 +1117,7 @@ def fixup_single_player_csv(sp_array, iso_dir, is_gc):
     csv_dir_name = tmpdirname.name
     iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
 
-    index = 0
+    index = 1 # 1 indexed!
     level_data = []
     for level in sp_array:
       level_data.append(level.get_level_info(index))
@@ -1132,7 +1134,7 @@ def fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc):
     csv_dir_name = tmpdirname.name
     iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
 
-    index = len(sp_array)
+    index = len(sp_array) + 1
     level_data = []
     for level in mp_array:
       level_data.append(level.get_level_info(index))
@@ -1164,7 +1166,6 @@ def apply_level_array_codes(
       mp_array +
       [NULL_LEVEL]) # Level array ends with this
 
-  # No mp yet!
   apply_level_count_overrides(dol, len(sp_array), len(mp_array) - 1)
 
   fixup_single_player_csv(sp_array, iso_dir, is_gc)
