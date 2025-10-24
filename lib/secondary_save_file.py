@@ -10,6 +10,8 @@ def save_file_layout_common_offsets():
   default_save_file_entries = [
     {"name": "SAVE_FILE_OFFSET_VERSION",
      "size": 4},
+    {"name": "SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED",
+     "size": 4},
     {"name": "SAVE_FILE_OFFSET_SP_LEVELS",
      "size": 5000},
     {"name": "SAVE_FILE_OFFSET_EXAVOLT_RESERVED",

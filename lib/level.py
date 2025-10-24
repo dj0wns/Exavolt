@@ -1047,7 +1047,10 @@ def level_array_to_bytes(level_array):
 
 
 
-def apply_level_count_overrides(dol, sp_count, mp_count):
+def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp_count, memory_dict):
+
+  memory_dict['SP_LEVEL_COUNT'] = sp_count
+  memory_dict['MP_LEVEL_COUNT'] = mp_count
 
   cmpwi = 0x2c170000 + sp_count
   cmpwir31 = 0x2c1f0000 + sp_count
@@ -1068,6 +1071,21 @@ def apply_level_count_overrides(dol, sp_count, mp_count):
   # MP OVERRIDES
   apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
   apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
+
+  # Now apply code injections
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "EnableContinueOfExtraLevels.asm"),
+      0x8015d854,
+      memory_dict)
+  # Update following branch to a bne
+  apply_hack(dol, [0x0415d858, 0x40820018])
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "DontGrayOutContinueOfExtraLevels.asm"),
+      0x8015da28,
+      memory_dict)
+  # Update following branch to a bne
+  #apply_hack(dol, [0x0415da2c, 0x40820008])
 
 def init_default_levels(iso_dir):
     sp_description_dict = {
@@ -1166,7 +1184,7 @@ def apply_level_array_codes(
       mp_array +
       [NULL_LEVEL]) # Level array ends with this
 
-  apply_level_count_overrides(dol, len(sp_array), len(mp_array) - 1)
+  apply_level_count_overrides(dol, codes_file_location, asm_path, len(sp_array), len(mp_array) - 1, memory_dict)
 
   fixup_single_player_csv(sp_array, iso_dir, is_gc)
   fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc)

@@ -153,7 +153,8 @@ li r5, 0
     SAVE_FILE_POINTER,
     SECONDARY_SAVE_FILE_SIZE,
     SAVE_FILE_OFFSET_VERSION,
-    SAVE_FILE_VERSION) }}
+    SAVE_FILE_VERSION,
+    SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED) }}
 
 
 # Now we need to save to file to make sure the player has a valid save file
