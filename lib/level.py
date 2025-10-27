@@ -1065,6 +1065,7 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   apply_hack(dol, [0x041c8d08, cmpwi - 1])
   apply_hack(dol, [0x04157cac, cmplwi])
   apply_hack(dol, [0x04158fac, cmplwi])
+  apply_hack(dol, [0x04158f6c, cmplwi])
   apply_hack(dol, [0x0414b6fc, cmplwi])
   # subi to subtract sp count
   apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
@@ -1086,6 +1087,16 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
       memory_dict)
   # Update following branch to a bne
   apply_hack(dol, [0x0415da2c, 0x40820008])
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "IncrementExtraCurrentLevelVariable.asm"),
+      0x801c8d9c,
+      memory_dict)
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "CheckCompletedCampaignInPlayerProfile.asm"),
+      0x801c8da4,
+      memory_dict)
 
 def init_default_levels(iso_dir):
     sp_description_dict = {

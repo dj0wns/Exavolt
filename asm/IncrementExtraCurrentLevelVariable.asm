@@ -6,13 +6,13 @@
 
 # Insert at 0x801c8d9c
 
-# r0 has the new nuber of levels
+# r0 has the new number of levels
 # r3 is scratch
 # r27 is the profile pointer
 
-cmpwi r0, 42 # defult number of levels
+cmpwi r0, 42 # default number of levels
 
-beq ADDITONAL_LEVEL
+bgt ADDITIONAL_LEVEL
 
 STANDARD_LEVEL:
 
@@ -28,18 +28,18 @@ li r0, 42
 stb r0, 0x15(r27)
 
 # now do secondary save file
-lis r3, {{ scratch_memory_pointer }}@h
-ori r3, r3, {{ scratch_memory_pointer }}@l
+lis r3, {{ SCRATCH_MEMORY_POINTER }}@h
+ori r3, r3, {{ SCRATCH_MEMORY_POINTER }}@l
 lwz r3, 0(r3)
 
-lis r0, {{ save_file_pointer }}@h
-ori r0, r0, {{ save_file_pointer }}@l
+lis r0, {{ SAVE_FILE_POINTER }}@h
+ori r0, r0, {{ SAVE_FILE_POINTER }}@l
 add r3, r3, r0
 lwz r3, 0(r3) # base save file pointer
 
 # now index into the save file for our piece of memory
-lis r0, {{ save_file_offset_extra_levels_completed }}@h
-ori r0, r0, {{ save_file_offset_extra_levels_completed }}@l
+lis r0, {{ SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED }}@h
+ori r0, r0, {{ SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED }}@l
 add r3, r0, r3
 
 lwz r0, 0(r3) # extra levels completed
