@@ -1085,7 +1085,7 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
       0x8015da28,
       memory_dict)
   # Update following branch to a bne
-  #apply_hack(dol, [0x0415da2c, 0x40820008])
+  apply_hack(dol, [0x0415da2c, 0x40820008])
 
 def init_default_levels(iso_dir):
     sp_description_dict = {

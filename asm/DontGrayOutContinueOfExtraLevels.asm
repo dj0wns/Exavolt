@@ -10,7 +10,7 @@
 
 {{ sfd.SeeIfGameCompleted(
     "r0",
-    "r5",
+    "r6",
     "r28",
     SCRATCH_MEMORY_POINTER,
     SAVE_FILE_POINTER,
