@@ -1,17 +1,17 @@
 ###########################################################
-# This code's job is to check if the player has completed all the main and extra levels and use that to determine if we need to open
+# Update the index used for replay level selection to take into account bonus
+# levels completed.
 ###########################################################
 
-# Insert at 0x8015da28
+# Insert at 0x8015dcd0
 
 {% import "SeeIfGameCompleted.asm" as sfd -%}
 
-# Looks like r0 and r4 are free to use
 
 {{ sfd.SeeIfGameCompleted(
-    "r3",
+    "r6",
     "r4",
-    "r30",
+    "r31",
     SCRATCH_MEMORY_POINTER,
     SAVE_FILE_POINTER,
     SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED,

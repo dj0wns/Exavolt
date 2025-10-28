@@ -1055,6 +1055,7 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   cmpwi = 0x2c170000 + sp_count
   cmpwir31 = 0x2c1f0000 + sp_count
   cmplwi = 0x28000000 + sp_count
+  cmplwir4 = 0x28040000 + sp_count
 
 
   # Everywhere i can find where level count is referred to in code
@@ -1066,6 +1067,8 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   apply_hack(dol, [0x04157cac, cmplwi])
   apply_hack(dol, [0x04158fac, cmplwi])
   apply_hack(dol, [0x04158f6c, cmplwi])
+  apply_hack(dol, [0x04155010, cmplwi])
+  apply_hack(dol, [0x04154ffc, cmplwir4])
   apply_hack(dol, [0x0414b6fc, cmplwi])
   # subi to subtract sp count
   apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
@@ -1096,6 +1099,16 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "CheckCompletedCampaignInPlayerProfile.asm"),
       0x801c8da4,
+      memory_dict)
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "GetLevelToContinueTo.asm"),
+      0x80164688,
+      memory_dict)
+
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "ListExtraLevelsInReplayMenu.asm"),
+      0x8015dcd0,
       memory_dict)
 
 def init_default_levels(iso_dir):
