@@ -13,7 +13,7 @@ def save_file_layout_common_offsets():
     {"name": "SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED",
      "size": 4},
     {"name": "SAVE_FILE_OFFSET_SP_LEVELS",
-     "size": 5000},
+     "size": 100000}, # We support 200 levels
     {"name": "SAVE_FILE_OFFSET_EXAVOLT_RESERVED",
      "size": 100000},
     {"name": "SAVE_FILE_OFFSET_EXAVOLT_SANDBOX",

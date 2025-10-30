@@ -1111,6 +1111,13 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
       0x8015dcd0,
       memory_dict)
 
+  # This appears to work correctly, just need to also do the other end of level stuff like secret chips etc
+  # Also we need to load this in on the back end!
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "SaveInventoryToSecondaryMemory.asm"),
+      0x801c8d50,
+      memory_dict)
+
 def init_default_levels(iso_dir):
     sp_description_dict = {
         'pick_level_text' : 7,

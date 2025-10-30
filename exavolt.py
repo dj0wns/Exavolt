@@ -58,8 +58,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
   player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
   sp_level_list = lib.level.DEFAULT_SP_LEVEL_ARRAY.copy()
-  sp_level_list.append(sp_level_list[13])
   mp_level_list = lib.level.DEFAULT_MP_LEVEL_ARRAY.copy()
+  sp_level_list.append(mp_level_list[13])
 
   level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
   level_invent_dict_list = level_invent_dict_list_initial.copy()

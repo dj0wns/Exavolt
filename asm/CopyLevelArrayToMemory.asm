@@ -134,6 +134,93 @@ load_new_level_address 0x801b095a 0x801b0964 0x6063
 # UNKNOWN_FUNCTION (r30, r4)
 load_new_level_address 0x801b0a7e 0x801b0a8c 0x609e
 
+# game_UnloadLevel (r3)
+load_new_level_address 0x801962e6 0x801962ec 0x6063
+
+# UNKNOWN (r4, r0)
+load_new_level_address 0x80195e96 0x80195ea0 0x6080
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0ba2 0x801b0ba4 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0bbe 0x801b0bc0 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0bda 0x801b0bdc 0x6063
+
+# UNKNOWN (r4)
+load_new_level_address 0x801b15fa 0x801b15fc 0x6084
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0ba2 0x801b0ba4 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x800cebba 0x800cebc4 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b2cca 0x801b2ccc 0x6063
+
+# UNKNOWN (r4, r0)
+load_new_level_address 0x80195eda 0x80195ee0 0x6080
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0d7e 0x801b0d80 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801c8b1a 0x801c8b1c 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x80179006 0x80179008 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x8019826e 0x80198270 0x6063
+
+# UNKNOWN (r4)
+load_new_level_address 0x80197daa 0x80197dac 0x6084
+
+# UNKNOWN (r3)
+load_new_level_address 0x8002469e 0x800246a0 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801a3792 0x801a3798 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801983ba 0x801983bc 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x8016bef6 0x8016bef8 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0fe6 0x801b0fe8 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b108a 0x801b108c 0x6063
+
+# UNKNOWN (r3, r4)
+load_new_level_address 0x80198146 0x80198148 0x6064
+
+# UNKNOWN (r3)
+load_new_level_address 0x801987aa 0x801987ac 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x8015493e 0x80154948 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x80155bde 0x80155be0 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801c8c22 0x801c8c24 0x6063
+
+# UNKNOWN (r3)
+load_new_level_address 0x801b0ee2 0x801b0ee4 0x6063
+
+# UNKNOWN (r6)
+load_new_level_address 0x80063f7a 0x80063f8c 0x60c6
+
+# UNKNOWN (r10)
+load_new_level_address 0x801840ee 0x801840f0 0x614a
+
 # Now patch the logic with these new offsets
 
 # Restore link register
