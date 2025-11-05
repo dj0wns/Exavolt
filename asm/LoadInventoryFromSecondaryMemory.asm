@@ -3,23 +3,20 @@
 # commands
 ###########################################################
 
-## Inject at 0x801c8d50
+## Inject at 0x801c87c8
 
-cmpwi r23, 41 # -1 because we use +1 here
+cmpwi r23, 42 # -1 because its zero indexed
 blt STANDARD_FLOW
 
 EXTRA_LEVELS_FLOW:
 
-# increment level by 1 because we save inventory to the next level.
-addi r5, r23, 1
-
 {% import "CalculateNewInventorySaveLocation.asm" as sfd -%}
 
 {{ sfd.CalculateNewInventorySaveLocation(
-    "r28",
-    "r5",
+    "r27",
+    "r23",
     "r3",
-    "r12",
+    "r5",
     SCRATCH_MEMORY_POINTER,
     SAVE_FILE_POINTER,
     SAVE_FILE_OFFSET_SP_LEVELS) }}
@@ -33,7 +30,7 @@ b END
 
 STANDARD_FLOW:
 # Replace command
-add r3, r27, r3
+add r3, r29, r3
 
 END:
 

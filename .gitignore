@@ -1,0 +1,14 @@
+# Ignore all temp asm files
+*.asm.tmp
+
+# Ignore vim swap files
+*.swp
+
+# Ignore testing isos
+*.iso
+
+# Ignore mods directory
+mods/*
+
+# Ignore pycache
+*__pycache__*

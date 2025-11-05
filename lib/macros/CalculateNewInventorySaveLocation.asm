@@ -26,9 +26,9 @@ add {{ destination_register }}, {{ destination_register }}, {{ scratch_register 
 # start of sp memory is now in destination register
 
 # now find the offset, zero indexed
-subi {{ scratch_register }}, {{ level_index_register }}, 41
+subi {{ scratch_register }}, {{ level_index_register }}, 42
 
-# 0x264 is the struct size for the end of level stuff
+# 0x268 is the struct size for the end of level stuff
 mulli {{ scratch_register }}, {{ scratch_register }}, 0x268
 
 add {{ destination_register }}, {{ destination_register }}, {{ scratch_register }}

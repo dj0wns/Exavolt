@@ -1117,6 +1117,23 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
       os.path.join(asm_path, "SaveInventoryToSecondaryMemory.asm"),
       0x801c8d50,
       memory_dict)
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "SaveChipsAndOtherThingsToSecondMemory.asm"),
+      0x801c8d74,
+      memory_dict)
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "SaveDataFromReplayToSecondaryMemory.asm"),
+      0x801c8dd8,
+      memory_dict)
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "LoadDataFromSecondaryMemoryToLevelSelection.asm"),
+      0x8015dd50,
+      memory_dict)
+  insert_assembly_into_codes_file(codes_file_location,
+      os.path.join(asm_path, "LoadInventoryFromSecondaryMemory.asm"),
+      0x801c87c8,
+      memory_dict)
+
 
 def init_default_levels(iso_dir):
     sp_description_dict = {
