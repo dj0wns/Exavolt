@@ -12,6 +12,7 @@ jsonpickle = "^4.0.5"
 pyisotools = "^2.4.7"
 geckolibs = "^0.2.3"
 jinja2 = "^3.1.6"
+jsonschema = "^4.25.1"
 
 
 [build-system]

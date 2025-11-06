@@ -23,130 +23,6 @@ LEVEL_TYPES = [
   "multiplayer"
 ]
 
-CAMPAIGN_LEVEL_NAMES = [
-  "wedmmines01",
-  "wedmmines02",
-  "wedmmines03",
-  "wedttown_01",
-  "wewtrace_01",
-  "wewjjourn01",
-  "wewjjourn02",
-  "wewjjourn03",
-  "wewzzombi01",
-  "wewccomm_01",
-  "wewccomm_02",
-  "wewccomm_03",
-  "wewchold_01",
-  "wewrresrch1",
-  "wewrresrch2",
-  "wewrresrch3",
-  "wewrresrch4",
-  "wewhchase01",
-  "wermmorbot1",
-  "wermmorbot2",
-  "werrreactr1",
-  "werrreactr2",
-  "wemccity_01",
-  "wemccity_03",
-  "wecffacty01",
-  "wemccity_05",
-  "wecrruins01",
-  "wecrruins02",
-  "wemccity_02",
-  "wecdsneak01",
-  "wecdsneak02",
-  "wediinvas01",
-  "webccolis01",
-  "webccolis02",
-  "webccolis03",
-  "webccolis04",
-  "wewkrockt01",
-  "weshhangr01",
-  "wessstatn01",
-  "wessstatn02",
-  "wesrrepair1",
-  "wesccorros1",
-]
-
-MULTIPLAYER_LEVEL_NAMES = [
-  "we01multi01",
-  "we02multi02",
-  "we03multi03",
-  "we05multi05",
-  "we11multi11",
-  "we15multi15",
-  "we08multi08",
-  "we12multi12",
-  "we14multi14",
-  "we09multi09",
-  "we10multi10",
-  "we07multi07",
-  "we04multi04",
-  "we06multi06",
-]
-
-LEVEL_BOT_MAP = [
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "mozer",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "krunk",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "slosh",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-  "glitch",
-]
-
 @dataclass
 class Level:
   title: str
@@ -161,6 +37,7 @@ class Level:
   draw_ptr: int
   projector_offsets: float
   projector_range_adjustment: float
+  inventory_override: dict
 
   # For csv file
   def add_level_info(self, csv_row):
@@ -257,7 +134,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     0.0,
-    1.0
+    1.0,
+    {}
   ),
   Level(
     "2 Seal the Mines",
@@ -270,7 +148,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     0.0,
-    1.0
+    1.0,
+    {}
   ),
   Level(
     "3 Seal the Mines",
@@ -283,7 +162,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0,
     10.0,
-    4.0
+    4.0,
+    {}
   ),
   Level(
     "4 Clean Up",
@@ -297,6 +177,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "5 RAT race",
@@ -310,6 +191,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     50.0,
     4.0,
+    {}
   ),
   Level(
     "6 Wasteland Journey",
@@ -323,6 +205,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "7 Wasteland Journey",
@@ -336,6 +219,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     10.0,
     4.0,
+    {}
   ),
   Level(
     "8 Wasteland Journey",
@@ -349,6 +233,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "9 ZombieBot Boss",
@@ -362,6 +247,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0x801b10b8,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "10 Destroy Comm Cntr",
@@ -375,6 +261,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "11 Destroy Comm Cntr",
@@ -388,6 +275,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "12 Destroy Comm Cntr",
@@ -401,6 +289,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "13 Hold Your Ground",
@@ -414,6 +303,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0x801b10b8,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "14 R & D",
@@ -427,6 +317,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "15 R & D",
@@ -440,6 +331,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "16 R & D",
@@ -453,6 +345,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "17 R & D",
@@ -466,6 +359,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "18 Wasteland Chase",
@@ -479,6 +373,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "19 Morbot Region",
@@ -492,6 +387,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     10.0,
     4.0,
+    {}
   ),
   Level(
     "20 Morbot Region",
@@ -505,6 +401,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "21 Reactor",
@@ -518,6 +415,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     10.0,
     4.0,
+    {}
   ),
   Level(
     "22 Reactor",
@@ -531,6 +429,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "23 Mil City Hub",
@@ -544,6 +443,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "24 Mil City Hub",
@@ -557,6 +457,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "25 Spy vs. Spy",
@@ -570,6 +471,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "26 Ruins",
@@ -583,6 +485,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "27 Ruins",
@@ -596,6 +499,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "28 Ruins",
@@ -609,6 +513,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "29 Secret Rendezvous",
@@ -622,6 +527,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "30 Night Sneak",
@@ -635,6 +541,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "31 Night Sneak",
@@ -648,6 +555,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "32 Invasion",
@@ -661,6 +569,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "33 Coliseum",
@@ -674,6 +583,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "34 Coliseum",
@@ -687,6 +597,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "35 Coliseum",
@@ -700,6 +611,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "36 Coliseum",
@@ -713,6 +625,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "37 Race to the Rocket",
@@ -726,6 +639,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "38 Space Dock",
@@ -739,6 +653,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "39 Space Station",
@@ -752,6 +667,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "40 Space Station",
@@ -765,6 +681,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "41 Gen. Corrosive",
@@ -778,6 +695,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0x801b10b8,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "42 Final Battle",
@@ -791,6 +709,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
     0,
     0.0,
     1.0,
+    {}
   ),
 ]
 
@@ -807,6 +726,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "2 Spy v Spy",
@@ -820,6 +740,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "3 Tanks Alot",
@@ -833,6 +754,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "4 MacMines",
@@ -846,6 +768,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "5 Inferno Machine",
@@ -859,6 +782,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "6 Clean Up",
@@ -872,6 +796,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "7 Trenches",
@@ -885,6 +810,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "8 Comm AAGun",
@@ -898,6 +824,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "9 Morbotland",
@@ -911,6 +838,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "10 Reactor",
@@ -924,6 +852,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "11 Lost Boss",
@@ -937,6 +866,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "12 Ruins",
@@ -950,6 +880,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "13 Coliseum",
@@ -963,6 +894,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   ),
   Level(
     "14 Corrosive City",
@@ -976,6 +908,7 @@ DEFAULT_MP_LEVEL_ARRAY = [
     00000000,
     0.0,
     1.0,
+    {}
   )
 ]
 
@@ -991,6 +924,7 @@ GENERIC_LEVEL = Level(
     00000000,
     0.0,
     1.0,
+    {}
   )
 
 NULL_LEVEL = Level(
@@ -1005,6 +939,7 @@ NULL_LEVEL = Level(
     00000000,
     0.0,
     0.0,
+    {}
   )
 
 
@@ -1016,9 +951,6 @@ def level_array_to_bytes(level_array):
   index = -1 # Generic level is -1
   for level in level_array:
     offset_dict, string_offset = level.get_string_offsets(string_offset)
-    for k,v in offset_dict.items():
-      print(k, hex(v))
-    print(string_offset)
     level_buffer += level.to_bytes(offset_dict, index)
     string_buffer += level.get_concatenated_strings()
     # increment index!
@@ -1160,7 +1092,6 @@ def init_default_levels(iso_dir):
       #load in sp csv file
     with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'r') as pick_levels:
       sp_data = pick_levels.readlines()
-    print(sp_data)
 
 
     #load in sp csv file
@@ -1211,8 +1142,6 @@ def fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc):
     csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX))
     shutil.move(os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE + CSV_SUFFIX), os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE))
     mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE)], "")
-
-    print(MP_CSV_DATA)
 
 
 def apply_level_array_codes(
