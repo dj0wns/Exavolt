@@ -23,9 +23,9 @@
 ## Inject at 0x8029e468
 
 ## CONSTANTS
-Mask=0x00ffffff
+Mask=0x01ffffff
 ForwardJump=0x4800
-BackwardJump=0x4b00
+BackwardJump=0x4a00
 
 
 fmem_AllocAndZero=0x80288c60
@@ -161,6 +161,9 @@ lwz r7, 0(r21) # byte length
 add r7, r5, r7 #add byte length to offset
 jump r7, r6
 
+# clear the instruction cache for the block
+icbi 0, r5
+
 # now read bytes into buffer
 or r3, r22, r22 # file handle
 lwz r4, 0(r21) # byte length
@@ -216,6 +219,9 @@ lwz r7, 0(r21) # byte length
 add r7, r5, r7 #add byte length to offset
 jump r7, r6
 
+# clear the instruction cache for the block
+icbi 0, r5
+
 # now read bytes into buffer
 or r3, r22, r22 # file handle
 lwz r4, 0(r21) # byte length
@@ -265,6 +271,10 @@ lwz r4, 0(r21) # byte length
 li r6, 0
 li r7, 0
 call ffile_Read
+
+# clear the instruction cache for the block before making the jump.
+icbi 0, r23
+isync
 
 # Execute code
 mtlr r23

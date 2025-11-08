@@ -28,7 +28,7 @@ class Level:
   title: str
   starting_bot: str
   wld_resource_name: str
-  #level_id: int - too be calculated at runtime, not stored
+  #level_index: int - too be calculated at runtime
   csv_file: str
   csv_material_file: str
   load_ptr: int
@@ -38,6 +38,8 @@ class Level:
   projector_offsets: float
   projector_range_adjustment: float
   inventory_override: dict
+  # tuple of injection_location, raw file as string, memory_replacement_dict
+  # assembly_files = []
 
   # For csv file
   def add_level_info(self, csv_row):
@@ -48,6 +50,8 @@ class Level:
     self.time_to_beat = csv_row[4]
 
   def get_level_info(self, level_index):
+    # store this for use with other processes!
+    self.level_index = level_index
     return [self.location,
             self.name,
             self.screenshot,
@@ -978,6 +982,17 @@ def level_array_to_bytes(level_array):
   return out_string
 
 
+def apply_level_assembly_files(dol, codes_file_location, sp_array, mp_array):
+  for level in sp_array + mp_array:
+    if hasattr(level, 'assembly_files'):
+      for address, data, memory_dict in level.assembly_files:
+        # Now apply code injections
+        insert_assembly_into_codes_file(dol,
+            codes_file_location,
+            data,
+            address,
+            level.level_index,
+            memory_dict)
 
 def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp_count, memory_dict):
 
@@ -1144,6 +1159,21 @@ def fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc):
     mst_insert.execute(True, iso_mst, [os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE)], "")
 
 
+def insert_levels_into_sp_array(insert_array, sp_array):
+  i = 0
+  for i in range(len(insert_array)):
+    index = insert_array[i][0]
+    level = insert_array[i][1]
+    if index == -1:
+      # add to end
+      sp_array.append(level)
+    else:
+      sp_array.insert(index, level)
+      # now increment every insert index after this point to match
+      for j in range(i, insert_array):
+        if insert_array[j][0] >= index:
+          insert_array[j][0] += 1
+
 def apply_level_array_codes(
     dol,
     memory_dict,
@@ -1151,6 +1181,7 @@ def apply_level_array_codes(
     codes_file_location,
     sp_array,
     mp_array,
+    insert_array,
     iso_dir,
     is_gc):
 
@@ -1161,10 +1192,14 @@ def apply_level_array_codes(
       mp_array +
       [NULL_LEVEL]) # Level array ends with this
 
+  insert_levels_into_sp_array(insert_array, sp_array)
+
   apply_level_count_overrides(dol, codes_file_location, asm_path, len(sp_array), len(mp_array) - 1, memory_dict)
 
   fixup_single_player_csv(sp_array, iso_dir, is_gc)
   fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc)
+
+  apply_level_assembly_files(dol, codes_file_location, sp_array, mp_array)
 
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "CopyLevelArrayToMemory.asm"),

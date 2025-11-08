@@ -58,6 +58,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
   sp_level_list = lib.level.DEFAULT_SP_LEVEL_ARRAY.copy()
   mp_level_list = lib.level.DEFAULT_MP_LEVEL_ARRAY.copy()
+  insert_level_list = [] # tuple of (index, level)
 
   try:
     if extract_only or no_rebuild:
@@ -110,7 +111,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       for entry in data["scratch_memory"]:
         if entry['global']:
           lib.scratch_memory.add_entry_to_dict(entry, scratch_memory_dict, scratch_memory_size)
-      add csv edits
+      # add csv edits
       for csv_edit in data["csv_edits"]:
         csv_edits.append(csv_edit)
       if len(sp_level_list) > 200:
@@ -119,7 +120,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       if len(mp_level_list) > 200:
         print(f'Too many multiplayer player levels being injected! Exceeds the limit of 200')
         raise ModInsertionException()
-      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, sp_level_list, mp_level_list, scratch_memory_dict, scratch_memory_size)
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, sp_level_list, mp_level_list, insert_level_list, scratch_memory_dict, scratch_memory_size)
   except Exception:
     raise ModInsertionException()
 
@@ -156,28 +157,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
     for csv_file, values in csv_dict.items():
       print(f'Applying csv edits to {csv_file}\n{values}')
-      lib.file_edits.apply_csv_edits(metadata, tmp_dir_name, csv_file, values, True)
+      lib.file_edits.apply_csv_edits(tmp_dir_name, csv_file, values, True)
   except Exception:
     raise ValueError("Error applying csv edits")
 
   try:
-    # Always insert bot type spawning
-    print("Inserting player bot modifications")
-    #lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
-    #player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
-    #lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
-
-    # See if there are any modified inventories
-    level_invent_dict_list = []
-    has_invent_overrides = False
-    for level in sp_level_list + mp_level_list:
-      if level.inventory_override:
-        has_invent_overrides = True
-      level_invent_dict_list.append(level.inventory_override)
-    if has_invent_overrides:
-      print("Inserting player inventory modifications")
-      lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
-
     asm_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm")
 
     # With the addition of scratch memory,
@@ -219,10 +203,26 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         codes_file_location,
         sp_level_list,
         mp_level_list,
+        insert_level_list,
         tmp_dir_name,
         True)
 
-    print(scratch_memory_dict)
+    # Always insert bot type spawning
+    print("Inserting player bot modifications")
+    #lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
+    #player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
+    #lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
+
+    # See if there are any modified inventories
+    level_invent_dict_list = []
+    has_invent_overrides = False
+    for level in sp_level_list + mp_level_list:
+      if level.inventory_override:
+        has_invent_overrides = True
+      level_invent_dict_list.append(level.inventory_override)
+    if has_invent_overrides:
+      print("Inserting player inventory modifications")
+      lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
 
     lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
 

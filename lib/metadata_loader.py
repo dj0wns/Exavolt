@@ -202,6 +202,8 @@ class ModMetadata:
     # fix up lists for easier navigation
     if 'assembly_files' not in self.data:
       self.data['assembly_files'] = []
+    if 'csv_edits' not in self.data:
+      self.data['csv_edits'] = []
     if 'gecko_codes' not in self.data:
       self.data['gecko_codes'] = []
     if 'levels' not in self.data:

@@ -116,7 +116,7 @@ def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_re
   else:
     insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
 
-def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index, jinja_replacement_dict):
+def insert_level_assembly_into_codes_file(dol, codes_file_location, data, address, level_index, jinja_replacement_dict):
   level_switch_code = f"""
  ####### LEVEL BYPASS CODES ######
 
@@ -134,9 +134,6 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
   """
   result_file = file + '.tmp'
   # Prepend switch code to file
-  # first read entire file into memory so we can do that
-  with open(file, 'r') as original:
-    data = original.read()
 
   data = create_debug_header(file, address) + level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
 

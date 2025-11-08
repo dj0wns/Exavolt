@@ -13,11 +13,10 @@ from .assembly import insert_assembly_into_codes_file, insert_level_assembly_int
 from .dol import apply_hack
 from .scratch_memory import add_entry_to_dict
 
-def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, codes_file_location, sp_level_map, mp_level_map, default_scratch_memory_entries, memory_offset):
+def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, codes_file_location, sp_level_map, mp_level_map, insert_level_list, default_scratch_memory_entries, memory_offset):
 
   assembly_files = {}
   level_assembly_files = []
-  levels_to_insert = [] # tuple of (index, level)
 
   data = metadata.data
 
@@ -36,6 +35,8 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
 
   # map of files that get replaced, usually level names
   for level in data['levels']:
+    # prep assembly files for later
+    level.assembly_files = []
     if level['type'] == LEVEL_TYPES[0]: #campaign
       level_list = sp_level_list
       level_index = sp_level_index[0]
@@ -126,7 +127,7 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
         mst_path = os.path.join(tmpdirname.name, info.filename)
         print(f'Extracting {info.filename} to {tmpdirname.name}')
         mod_zip.extract(info.filename, tmpdirname.name)
-        # now rename files if needed
+
         mst_extract_path = os.path.join(tmpdirname.name, "extract")
         print(f'Extracting mst to {mst_extract_path}')
         mst_extract.extract(mst_path, mst_extract_path, False, False, True)
@@ -149,10 +150,12 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
           # list of dicts that shouldnt be too long so we are just going to iterate over everyone one for the O(n^2) dream, lazy. Fix if it matters someday
           if os.path.basename(info.filename) == level_assembly_file["file"]:
             # this is an assembly file pertaining to a specific level and should be injected specially
+            # But we won't know the level offset until later in the process, so copy the raw data to the level entity.
             tmpdirname = tempfile.TemporaryDirectory()
             mod_zip.extract(info.filename, tmpdirname.name)
             file_path = os.path.join(tmpdirname.name, info.filename)
-            insert_level_assembly_into_codes_file(dol, codes_file_location, file_path, level_assembly_file["injection_location"], level_assembly_file['level_index'], local_scratch_memory_replacement_dict)
+            with open(file_path, "r") as file:
+              level.assembly_files.append((level_assembly_file["injection_location"], file.read(), local_scratch_memory_replacement_dict))
         if os.path.basename(info.filename) in assembly_files.keys():
           # this is an assembly file that needs to be injected into the dol not added to the iso
           tmpdirname = tempfile.TemporaryDirectory()
