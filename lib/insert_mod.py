@@ -109,8 +109,8 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
 
       if level['type'] == LEVEL_TYPES[0]: #campaign
           insert_level_list.append(
-              (level['index'] if 'index' in level else -1,
-               new_level))
+              [level['index'] if 'index' in level else -1,
+               new_level])
       else:
         mp_level_list.append(new_level)
 

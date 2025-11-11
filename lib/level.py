@@ -38,7 +38,7 @@ class Level:
   projector_offsets: float
   projector_range_adjustment: float
   inventory_override: dict
-  # tuple of injection_location, raw file as string, memory_replacement_dict
+  # list of injection_location, raw file as string, memory_replacement_dict
   assembly_files: list
 
   # For csv file
@@ -1298,7 +1298,7 @@ def insert_levels_into_sp_array(insert_array, sp_array):
     else:
       sp_array.insert(index, level)
       # now increment every insert index after this point to match
-      for j in range(i, insert_array):
+      for j in range(i, len(insert_array)):
         if insert_array[j][0] >= index:
           insert_array[j][0] += 1
 
