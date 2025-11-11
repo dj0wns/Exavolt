@@ -209,9 +209,9 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
     # Always insert bot type spawning
     print("Inserting player bot modifications")
-    #lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
-    #player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
-    #lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
+    lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
+    player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
+    lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
 
     # See if there are any modified inventories
     level_invent_dict_list = []

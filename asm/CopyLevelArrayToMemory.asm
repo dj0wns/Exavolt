@@ -6,6 +6,8 @@
 
 ## Execute immediately!
 
+LEVEL_COUNT_VAR = 0x804b8918
+
 # Common pattern (stateful with contextual registers) for updating the million
 # pointers to the level array....
 .macro load_new_level_address lis_addr ori_addr ori_code
@@ -220,6 +222,19 @@ load_new_level_address 0x80063f7a 0x80063f8c 0x60c6
 
 # UNKNOWN (r10)
 load_new_level_address 0x801840ee 0x801840f0 0x614a
+
+# UNKNOWN (r3)
+load_new_level_address 0x800626aa 0x800626ac 0x6063
+
+# Patch level count to match our new level array size
+
+lis r3, LEVEL_COUNT_VAR@h
+ori r3, r3, LEVEL_COUNT_VAR@l
+
+# The +2 is for the generic and null level
+li r4, {{ SP_LEVEL_COUNT + MP_LEVEL_COUNT + 2 }}
+
+stw r4, 0(r3)
 
 # Now patch the logic with these new offsets
 

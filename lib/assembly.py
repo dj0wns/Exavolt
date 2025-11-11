@@ -407,7 +407,6 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
         end_label=f"END_OF_PLAYER_SPAWN_CODE")
   # add final jump code
   player_spawn_code += "\nEND_OF_PLAYER_SPAWN_CODE:\n"
-  print(player_spawn_code)
 
   # Windows wont allow 2 file handles i guess. shutil fails to work with this
   code_file = tempfile.NamedTemporaryFile(delete=False)

@@ -8,12 +8,12 @@ import sys
 from .ma_tools import mst_extract
 from .ma_tools import mst_insert
 from .ma_tools import csv_rebuilder
-from .level import Level
+from .level import Level, LEVEL_TYPES
 from .assembly import insert_assembly_into_codes_file, insert_level_assembly_into_codes_file
 from .dol import apply_hack
 from .scratch_memory import add_entry_to_dict
 
-def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, codes_file_location, sp_level_map, mp_level_map, insert_level_list, default_scratch_memory_entries, memory_offset):
+def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, codes_file_location, sp_level_list, mp_level_list, insert_level_list, default_scratch_memory_entries, memory_offset):
 
   assembly_files = {}
   level_assembly_files = []
@@ -35,17 +35,16 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
 
   # map of files that get replaced, usually level names
   for level in data['levels']:
-    # prep assembly files for later
-    level.assembly_files = []
-    if level['type'] == LEVEL_TYPES[0]: #campaign
-      level_list = sp_level_list
-      level_index = sp_level_index[0]
-      sp_level_index[0] += 1
-    else:
-      level_list = mp_level_list
-      level_index = mp_level_index[0]
-      mp_level_index[0] += 1
-    if 'mode' not in level or level['mode'] == 'replace':
+    if level['type'] == LEVEL_TYPES[0] and(
+          'mode' not in level or level['mode'] == 'replace'):
+
+      if level['type'] == LEVEL_TYPES[0]: #campaign
+        level_list = sp_level_list
+        level_index = sp_level_index[0]
+        sp_level_index[0] += 1
+      else:
+        raise ValueError(f'Invalid type: {level["type"]} for replace')
+
       # Replace the level at the current index in the level array
       # TODO check timing on level info (name/location/screenshot) and make sure those arent overwritten
       if 'wld' in level:
@@ -82,40 +81,44 @@ def insert_mod(metadata, iso_dir, sp_level_index, mp_level_index, dol, is_gc, co
         level_list[level_index].starting_bot = level['player_bot'].lower()
       if "custom_inventory" in level:
         level_list[level_index].inventory_override = level["custom_inventory"]
-    if level['mode'] == 'insert':
+    elif level['type'] == LEVEL_TYPES[1] or level['mode'] == 'insert':
+      # Always insert mp levels at the end
       # We need to create a new level and send it back to insert later
       # All fields are required!!
+
       new_level = Level(
-        level['internal_title'],
-        level['player_bot'],
+        level['internal_title'] if 'internal_title' in level else level['wld'],
+        level['player_bot'] if 'player_bot' in level else 'glitch',
         level['wld'],
         level['csv'],
-        level['csv_material_file'],
-        level['load_function_offset'],
-        level['unload_function_offset'],
-        level['work_function_offset'],
-        level['draw_function_offset'],
-        level['projector_offsets'],
-        level['projector_range_adjustment'],
-        level['custom_inventory']
+        level['csv_material_file'] if 'csv_material_file' in level else 'WEDMmines01',
+        level['load_function_offset'] if 'load_function_offset' in level else 0,
+        level['unload_function_offset'] if 'unload_function_offset' in level else 0,
+        level['work_function_offset'] if 'work_function_offset' in level else 0,
+        level['draw_function_offset'] if 'draw_function_offset' in level else 0,
+        level['projector_offsets'] if 'projector_offsets' in level else 0.0,
+        level['projector_range_adjustment'] if 'projector_range_adjustment' in level else 1.0,
+        level['custom_inventory'] if 'custom_inventory' in level else {},
+        []
       )
       new_level.name = level['title']
       new_level.location = level['location']
       new_level.screenshot = level['thumbnail']
-      new_level.secret_chips = level['secret_chip_count']
-      new_level.time_to_beat = level['speed_chip_time']
+      new_level.secret_chips = level['secret_chip_count'] if 'secret_chip_count' in level else 0
+      new_level.time_to_beat = level['speed_chip_time'] if 'speed_chip_time' in level else 0
 
-      levels_to_insert.append(level['index'], new_level)
+      if level['type'] == LEVEL_TYPES[0]: #campaign
+          insert_level_list.append(
+              (level['index'] if 'index' in level else -1,
+               new_level))
+      else:
+        mp_level_list.append(new_level)
 
-    else:
-      raise Exception('Invalid level mode, {level["mode"]}')
-
-
-      if 'level_assembly_files' in level:
-          for asm_file in level['level_assembly_files']:
-            # TODO! move this later in the process so we can give it the proper indices!
-            asm_file['owning_level'] = level_list[level_index]
-            level_assembly_files.append(asm_file)
+    if 'level_assembly_files' in level:
+        for asm_file in level['level_assembly_files']:
+          # TODO! move this later in the process so we can give it the proper indices!
+          asm_file['owning_level'] = level_list[level_index]
+          level_assembly_files.append(asm_file)
 
   #insert relevant files into the mst
   with zipfile.ZipFile(metadata.zip_file_path) as mod_zip:
