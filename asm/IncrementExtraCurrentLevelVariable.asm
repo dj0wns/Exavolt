@@ -42,11 +42,11 @@ lis r0, {{ SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED }}@h
 ori r0, r0, {{ SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED }}@l
 add r3, r0, r3
 
-lwz r0, 0(r3) # extra levels completed
+lwz r12, 0(r3) # extra levels completed
 
-# Increment and store
-addi r0, r0, 1
-stw r0, 0(r3)
+# Increment and store - r0 breaks addi because it treats it as 0, so use r12 here.
+addi r12, r12, 1
+stw r12, 0(r3)
 
 
 END:
