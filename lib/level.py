@@ -1128,6 +1128,7 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   cmpwi = 0x2c170000 + sp_count
   cmpwir31 = 0x2c1f0000 + sp_count
   cmplwi = 0x28000000 + sp_count
+  cmplwimp = 0x28000000 + mp_count
   cmplwir4 = 0x28040000 + sp_count
 
 
@@ -1146,8 +1147,16 @@ def apply_level_count_overrides(dol, codes_file_location, asm_path, sp_count, mp
   # subi to subtract sp count
   apply_hack(dol, [0x04158f94, 0x3816ffff - sp_count + 1])
   # MP OVERRIDES
-  apply_hack(dol, [0x0415903c, cmplwi + mp_count + 1])
-  apply_hack(dol, [0x04158f8c, cmplwi + mp_count + 1])
+  apply_hack(dol, [0x0415903c, cmplwi + mp_count])
+  apply_hack(dol, [0x04158f8c, cmplwi + mp_count])
+
+  # MP level count for secret chip counts
+  apply_hack(dol, [0x04159208, cmplwimp])
+  # subfic?
+  apply_hack(dol, [0x0415921c, 0x23a00000 + mp_count])
+  apply_hack(dol, [0x0416805c, 0x20000000 + mp_count])
+  #disable minimum number of secret chip counts
+  apply_hack(dol, [0x041591d4, 0x4280000c])
 
   # Now apply code injections
   insert_assembly_into_codes_file(codes_file_location,
@@ -1234,7 +1243,6 @@ def init_default_levels(iso_dir):
     with open(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), 'r') as pick_levels:
       sp_data = pick_levels.readlines()
 
-
     #load in sp csv file
     global SP_CSV_DATA
     SP_CSV_DATA = read_ma_csv_to_dict(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), sp_description_dict)
@@ -1251,7 +1259,7 @@ def init_default_levels(iso_dir):
       DEFAULT_MP_LEVEL_ARRAY[index].add_level_info(level)
       index += 1
 
-def fixup_single_player_csv(sp_array, iso_dir, is_gc):
+def fixup_single_player_csv(sp_array, mp_array, iso_dir, is_gc):
     tmpdirname = tempfile.TemporaryDirectory()
     csv_dir_name = tmpdirname.name
     iso_mst = os.path.join(iso_dir, "root", "files", "mettlearms_gc.mst")
@@ -1262,6 +1270,11 @@ def fixup_single_player_csv(sp_array, iso_dir, is_gc):
       level_data.append(level.get_level_info(index))
       index += 1
     SP_CSV_DATA['level_names'] = level_data
+
+    print(SP_CSV_DATA['level_unlocking'])
+    # Remove secret chip requirements - first value is number of free levels
+    SP_CSV_DATA['level_unlocking'] = [[str(len(mp_array))]]
+
     write_ma_csv_to_file(os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), SP_CSV_DATA)
 
     csv_rebuilder.execute(is_gc, False, os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE), os.path.join(csv_dir_name, PICK_LEVEL_CSV_FILE + CSV_SUFFIX))
@@ -1322,9 +1335,9 @@ def apply_level_array_codes(
       mp_array +
       [NULL_LEVEL]) # Level array ends with this
 
-  apply_level_count_overrides(dol, codes_file_location, asm_path, len(sp_array), len(mp_array) - 1, local_dict)
+  apply_level_count_overrides(dol, codes_file_location, asm_path, len(sp_array), len(mp_array), local_dict)
 
-  fixup_single_player_csv(sp_array, iso_dir, is_gc)
+  fixup_single_player_csv(sp_array, mp_array, iso_dir, is_gc)
   fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc)
 
   apply_level_assembly_files(dol, codes_file_location, sp_array, mp_array)
