@@ -1,41 +1,39 @@
-
 WEAPON_STRING_ADDR_DICT = {
-  # primaries
-  "empty primary" : 0x803ae8a9,
-  "laser l1" : 0x803ae855,
-  "laser l2" : 0x803ad50c,
-  "laser l3" : 0x803ad515,
-  "rlauncher l1" : 0x803ae85e,
-  "rlauncher l2" : 0x803ad570,
-  "rlauncher l3" : 0x803ad57d,
-  "rivet gun l1" : 0x803ae86b,
-  "rivet gun l2" : 0x803ae94d,
-  "rivet gun l3" : 0x803ad556,
-  "flamer l1" : 0x803ae878,
-  "ripper l1" : 0x803ae882,
-  "ripper l2" : 0x803ad528,
-  "ripper l3" : 0x803ad532,
-  "spew l1" : 0x803ae88c,
-  "spew l2" : 0x803ad5d1,
-  "spew l3" : 0x803ad5d9,
-  "blaster l1" : 0x803ae894,
-  "blaster l2" : 0x803ad595,
-  "blaster l3" : 0x803ad5a0,
-  "mortar l1" : 0x803ae89f,
-  "tether l1" : 0x803ae926,
-  "tether l2" : 0x803ad5b5,
-  "tether l3" : 0x803ae95a,
-
-  # secondaries
-  "empty secondary" : 0x803ae8ff,
-  "coring charge" : 0x803ae8b7,
-  "magma bomb" : 0x803ae8c5,
-  "emp grenade" : 0x803ae8d0,
-  "cleaner" : 0x803ae8e5,
-  "recruiter grenade" : 0x803ae8ed,
-  "scope l1" : 0x803ae930,
-  "scope l2" : 0x803ae8dc,
-  "wrench" : 0x803ae939,
+    # primaries
+    "empty primary": 0x803AE8A9,
+    "laser l1": 0x803AE855,
+    "laser l2": 0x803AD50C,
+    "laser l3": 0x803AD515,
+    "rlauncher l1": 0x803AE85E,
+    "rlauncher l2": 0x803AD570,
+    "rlauncher l3": 0x803AD57D,
+    "rivet gun l1": 0x803AE86B,
+    "rivet gun l2": 0x803AE94D,
+    "rivet gun l3": 0x803AD556,
+    "flamer l1": 0x803AE878,
+    "ripper l1": 0x803AE882,
+    "ripper l2": 0x803AD528,
+    "ripper l3": 0x803AD532,
+    "spew l1": 0x803AE88C,
+    "spew l2": 0x803AD5D1,
+    "spew l3": 0x803AD5D9,
+    "blaster l1": 0x803AE894,
+    "blaster l2": 0x803AD595,
+    "blaster l3": 0x803AD5A0,
+    "mortar l1": 0x803AE89F,
+    "tether l1": 0x803AE926,
+    "tether l2": 0x803AD5B5,
+    "tether l3": 0x803AE95A,
+    # secondaries
+    "empty secondary": 0x803AE8FF,
+    "coring charge": 0x803AE8B7,
+    "magma bomb": 0x803AE8C5,
+    "emp grenade": 0x803AE8D0,
+    "cleaner": 0x803AE8E5,
+    "recruiter grenade": 0x803AE8ED,
+    "scope l1": 0x803AE930,
+    "scope l2": 0x803AE8DC,
+    "wrench": 0x803AE939,
 }
 
 HEADERS = r"""
@@ -302,7 +300,7 @@ b {end_label}
 
 # Simplified version of the code found in the disass
 # ignoring most if checks
-SPAWN_AS_GLITCH =r"""
+SPAWN_AS_GLITCH = r"""
 
 li r3, 0xdf8
 li r4, 0x8
@@ -335,7 +333,7 @@ CreateBotHud r20
 
 # Simplified version of the code found in the disass
 # ignoring most if checks
-SPAWN_AS_MOZER =r"""
+SPAWN_AS_MOZER = r"""
 
 li r3, 0xb48
 li r4, 0x8
@@ -368,7 +366,7 @@ CreateBotHud r20
 
 # Simplified version of the code found in the disass
 # ignoring most if checks
-SPAWN_AS_KRUNK =r"""
+SPAWN_AS_KRUNK = r"""
 
 li r3, 0xf30
 li r4, 0x8
@@ -401,7 +399,7 @@ CreateBotHud r20
 
 # Simplified version of the code found in the disass
 # ignoring most if checks
-SPAWN_AS_SLOSH =r"""
+SPAWN_AS_SLOSH = r"""
 
 li r3, 0x9d0
 li r4, 0x8
@@ -432,7 +430,7 @@ CreateBotHud r20
 
 """
 
-BASE_TITAN =r"""
+BASE_TITAN = r"""
   stwu r1, -0x30(r1) # add 0x30 bytes to stack
 
 # Step 1, call fnew
@@ -636,9 +634,11 @@ BASE_TITAN =r"""
 
 """
 SPAWN_AS_TITAN = BASE_TITAN.replace("SHIELD_VALUE", "0").replace("CHAINGUN_LEVEL", "2")
-SPAWN_AS_TITAN_SHIELD = BASE_TITAN.replace("SHIELD_VALUE", "1").replace("CHAINGUN_LEVEL", "2")
+SPAWN_AS_TITAN_SHIELD = BASE_TITAN.replace("SHIELD_VALUE", "1").replace(
+    "CHAINGUN_LEVEL", "2"
+)
 
-SPAWN_AS_ELITE_GUARD =r"""
+SPAWN_AS_ELITE_GUARD = r"""
   stwu r1, -0x30(r1) # add 0x30 bytes to stack
 
 # Step 1, call fnew
@@ -805,7 +805,7 @@ SPAWN_AS_ELITE_GUARD =r"""
 
 # Simplified version of the code found in the disass
 # ignoring most if checks
-BASE_GRUNT=r"""
+BASE_GRUNT = r"""
 
 li r3, 0x9b0
 li r4, 0x8
@@ -864,38 +864,61 @@ li r0, 0x3b06
 stw r0, 0x54(r21) # draw flags
 
 """
-SPAWN_AS_GRUNT_UNARMED = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_LASER = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_SPEW = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_FLAMER = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_RIVET = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_ROCKET = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace("SHIELD_VALUE", "0x0")
-SPAWN_AS_GRUNT_UNARMED_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace("SHIELD_VALUE", "0x1")
-SPAWN_AS_GRUNT_LASER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace("SHIELD_VALUE", "0x1")
-SPAWN_AS_GRUNT_SPEW_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace("SHIELD_VALUE", "0x1")
-SPAWN_AS_GRUNT_FLAMER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace("SHIELD_VALUE", "0x1")
-SPAWN_AS_GRUNT_RIVET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace("SHIELD_VALUE", "0x1")
-SPAWN_AS_GRUNT_ROCKET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace("SHIELD_VALUE", "0x1")
+SPAWN_AS_GRUNT_UNARMED = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_LASER = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_SPEW = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_FLAMER = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_RIVET = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_ROCKET = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace(
+    "SHIELD_VALUE", "0x0"
+)
+SPAWN_AS_GRUNT_UNARMED_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x0").replace(
+    "SHIELD_VALUE", "0x1"
+)
+SPAWN_AS_GRUNT_LASER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x1").replace(
+    "SHIELD_VALUE", "0x1"
+)
+SPAWN_AS_GRUNT_SPEW_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x2").replace(
+    "SHIELD_VALUE", "0x1"
+)
+SPAWN_AS_GRUNT_FLAMER_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x3").replace(
+    "SHIELD_VALUE", "0x1"
+)
+SPAWN_AS_GRUNT_RIVET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x5").replace(
+    "SHIELD_VALUE", "0x1"
+)
+SPAWN_AS_GRUNT_ROCKET_SHIELD = BASE_GRUNT.replace("WEAPON_TYPE", "0x10").replace(
+    "SHIELD_VALUE", "0x1"
+)
 
 BOT_NAME_DICT = {
-  "glitch":SPAWN_AS_GLITCH,
-  "mozer":SPAWN_AS_MOZER,
-  "krunk":SPAWN_AS_KRUNK,
-  "slosh":SPAWN_AS_SLOSH,
-  "titan":SPAWN_AS_TITAN,
-  "titan_shield":SPAWN_AS_TITAN_SHIELD,
-  "elite_guard":SPAWN_AS_ELITE_GUARD,
-  "grunt_unarmed":SPAWN_AS_GRUNT_UNARMED,
-  "grunt_laser":SPAWN_AS_GRUNT_LASER,
-  "grunt_spew":SPAWN_AS_GRUNT_SPEW,
-  "grunt_flamer":SPAWN_AS_GRUNT_FLAMER,
-  "grunt_rivet":SPAWN_AS_GRUNT_RIVET,
-  "grunt_rocket":SPAWN_AS_GRUNT_ROCKET,
-  "grunt_unarmed_shield":SPAWN_AS_GRUNT_UNARMED_SHIELD,
-  "grunt_laser_shield":SPAWN_AS_GRUNT_LASER_SHIELD,
-  "grunt_spew_shield":SPAWN_AS_GRUNT_SPEW_SHIELD,
-  "grunt_flamer_shield":SPAWN_AS_GRUNT_FLAMER_SHIELD,
-  "grunt_rivet_shield":SPAWN_AS_GRUNT_RIVET_SHIELD,
-  "grunt_rocket_shield":SPAWN_AS_GRUNT_ROCKET_SHIELD,
+    "glitch": SPAWN_AS_GLITCH,
+    "mozer": SPAWN_AS_MOZER,
+    "krunk": SPAWN_AS_KRUNK,
+    "slosh": SPAWN_AS_SLOSH,
+    "titan": SPAWN_AS_TITAN,
+    "titan_shield": SPAWN_AS_TITAN_SHIELD,
+    "elite_guard": SPAWN_AS_ELITE_GUARD,
+    "grunt_unarmed": SPAWN_AS_GRUNT_UNARMED,
+    "grunt_laser": SPAWN_AS_GRUNT_LASER,
+    "grunt_spew": SPAWN_AS_GRUNT_SPEW,
+    "grunt_flamer": SPAWN_AS_GRUNT_FLAMER,
+    "grunt_rivet": SPAWN_AS_GRUNT_RIVET,
+    "grunt_rocket": SPAWN_AS_GRUNT_ROCKET,
+    "grunt_unarmed_shield": SPAWN_AS_GRUNT_UNARMED_SHIELD,
+    "grunt_laser_shield": SPAWN_AS_GRUNT_LASER_SHIELD,
+    "grunt_spew_shield": SPAWN_AS_GRUNT_SPEW_SHIELD,
+    "grunt_flamer_shield": SPAWN_AS_GRUNT_FLAMER_SHIELD,
+    "grunt_rivet_shield": SPAWN_AS_GRUNT_RIVET_SHIELD,
+    "grunt_rocket_shield": SPAWN_AS_GRUNT_ROCKET_SHIELD,
 }
-
