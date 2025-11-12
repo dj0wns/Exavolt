@@ -2,6 +2,7 @@ import os
 
 from .assembly import insert_assembly_into_codes_file
 from .util import add_entry_to_dict
+from .dol import apply_hack
 
 SAVE_FILE_VERSION = 3
 
@@ -9,8 +10,10 @@ def save_file_layout_common_offsets():
   default_save_file_entries = [
     {"name": "SAVE_FILE_OFFSET_VERSION",
      "size": 4},
+    {"name": "SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED",
+     "size": 4},
     {"name": "SAVE_FILE_OFFSET_SP_LEVELS",
-     "size": 5000},
+     "size": 100000}, # We support 200 levels
     {"name": "SAVE_FILE_OFFSET_EXAVOLT_RESERVED",
      "size": 100000},
     {"name": "SAVE_FILE_OFFSET_EXAVOLT_SANDBOX",
@@ -32,13 +35,15 @@ def save_file_layout_common_offsets():
   return ret_dict
 
 def apply_secondary_save_file_codes(
+    dol,
     memory_dict,
     asm_path,
     codes_file_location):
+
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "InitSecondarySaveFileMemory.asm"),
-      0x8015675c,
-      memory_dict)
+      0,
+      memory_dict, immediate_exec=True)
   insert_assembly_into_codes_file(codes_file_location,
       os.path.join(asm_path, "SetDefaultSaveFileValues.asm"),
       0x8019ca94,
@@ -66,6 +71,11 @@ def apply_secondary_save_file_codes(
       os.path.join(asm_path, "LoadSecondarySaveFileFromDisk.asm"),
       0x8019cbb4,
       memory_dict)
+
+  # Null out index check in GetProfileInfos because we need to first see if any
+  # profiles are secondary before incrementing the counter, this logic check is
+  # moved in to the HideSecondaryProfilesFromMenuesScript.
+  apply_hack(dol, [0x042bf6cc, 0x60000000])
 
   # Code to hide excess files
   insert_assembly_into_codes_file(codes_file_location,

@@ -22,6 +22,15 @@ base_player_profile_address=0x804169bc
   blrl
 .endm
 
+# Store registers to stack to make sure we keep the state safe
+subi r1, r1, 0x20
+stw r4, 0x8(r1)
+stw r5, 0xc(r1)
+stw r6, 0x10(r1)
+stw r7, 0x14(r1)
+stw r19, 0x18(r1)
+stw r20, 0x1c(r1)
+
 # r3 is device_id
 # r4 is name
 # r5 is 0
@@ -110,7 +119,7 @@ or r4, r20, r20
 # Load the device id
 lwz r3, 0x6868(r31)
 
-# Call write profile!!!
+# Call read profile!!!
 call read_profile
 
 # Check if we successfully loaded, if not create a new profile
@@ -144,7 +153,8 @@ li r5, 0
     SAVE_FILE_POINTER,
     SECONDARY_SAVE_FILE_SIZE,
     SAVE_FILE_OFFSET_VERSION,
-    SAVE_FILE_VERSION) }}
+    SAVE_FILE_VERSION,
+    SAVE_FILE_OFFSET_EXTRA_LEVELS_COMPLETED) }}
 
 
 # Now we need to save to file to make sure the player has a valid save file
@@ -169,6 +179,15 @@ ori r7, r7, {{ SECONDARY_SAVE_FILE_SIZE }}@l
 call write_profile
 
 END:
+
+# Restore registers to stack to make sure we keep the state safe
+lwz r4, 0x8(r1)
+lwz r5, 0xc(r1)
+lwz r6, 0x10(r1)
+lwz r7, 0x14(r1)
+lwz r19, 0x18(r1)
+lwz r20, 0x1c(r1)
+addi r1, r1, 0x20
 
 # command we are replacing!!!
 li r3, 0x1

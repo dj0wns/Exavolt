@@ -16,6 +16,7 @@ from enum import Enum
 class CodeTypes(Enum) :
   STANDARD = 0
   CUSTOM_RETURN = 1
+  IMMEDIATE_EXECUTION = 2
 
 def create_debug_header(file, address):
   # Add debugger string with name and other info
@@ -25,7 +26,15 @@ def create_debug_header(file, address):
     debug_header += '\0'
 
   # add data type
-  debug_header = f'b JUMP_OVER_DEBUG_STRING\n.string "{debug_header}"\nJUMP_OVER_DEBUG_STRING:\n'
+  # Extra jumps to prevent off by 1 errors from breaking execution.
+  # Lazy safeguard.
+  debug_header = (
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'b JUMP_OVER_DEBUG_STRING\n'
+    f'.string "{debug_header}"\n'
+    f'JUMP_OVER_DEBUG_STRING:\n')
   return debug_header
 
 
@@ -63,6 +72,15 @@ def insert_bytes_into_codes_file(codes_file_location, bytes, address, include_ty
     dol_writer.write(bytes)
 
 # code type is the enum declared above
+def insert_immediate_exec_bytes_into_codes_file(codes_file_location, bytes, include_type = True):
+  # now inject the code into the dol
+  with open(codes_file_location, "ab") as dol_writer:
+    if include_type:
+      dol_writer.write(struct.pack(">I", CodeTypes.IMMEDIATE_EXECUTION.value))
+    dol_writer.write(struct.pack(">I", len(bytes)))
+    dol_writer.write(bytes)
+
+# code type is the enum declared above
 def insert_code_with_explicit_return_address_into_codes_file(codes_file_location, file, address, return_address):
   bytes = assemble_code_to_bytes(file)
   # now inject the code into the dol
@@ -73,7 +91,7 @@ def insert_code_with_explicit_return_address_into_codes_file(codes_file_location
     dol_writer.write(struct.pack(">I", return_address))
     dol_writer.write(bytes)
 
-def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_replacement_dict, include_type = True):
+def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_replacement_dict, include_type = True, immediate_exec = False):
 
   result_file = file + '.tmp'
   # Read in the file to apply the template code
@@ -93,9 +111,12 @@ def insert_assembly_into_codes_file(codes_file_location, file, address, jinja_re
     new_file.write(data)
 
   bytes = assemble_code_to_bytes(result_file)
-  insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
+  if immediate_exec:
+    insert_immediate_exec_bytes_into_codes_file(codes_file_location, bytes, include_type)
+  else:
+    insert_bytes_into_codes_file(codes_file_location, bytes, address, include_type)
 
-def insert_level_assembly_into_codes_file(dol, codes_file_location, file, address, level_index, jinja_replacement_dict):
+def insert_level_assembly_into_codes_file(dol, codes_file_location, data, address, level_index, jinja_replacement_dict):
   level_switch_code = f"""
  ####### LEVEL BYPASS CODES ######
 
@@ -113,9 +134,6 @@ def insert_level_assembly_into_codes_file(dol, codes_file_location, file, addres
   """
   result_file = file + '.tmp'
   # Prepend switch code to file
-  # first read entire file into memory so we can do that
-  with open(file, 'r') as original:
-    data = original.read()
 
   data = create_debug_header(file, address) + level_switch_code + data + "\nEND_OF_CODE_EXAVOLT_UNIQUE_NAME:\n"
 
@@ -361,7 +379,7 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
   insertion_address = 0x80197dd4
   return_address = 0x80197fb4
   player_spawn_code = lib.assembly_codes.HEADERS
-  for i in range(1,58):
+  for i in range(len(level_bot_map)):
     code_string = ""
     level_prefix = f"LEVEL_{i}_PREFIX_"
     lower_bot_name = level_bot_map[i].lower()
@@ -371,7 +389,7 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
       # Make sure to replace generic labels to make sure they are unique
       code_string = lib.assembly_codes.BOT_NAME_DICT[lower_bot_name].replace("LABEL", level_prefix)
     else:
-      raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i}")
+      raise ValueException(f"Unknown player bot type: {level_bot_map[i]} on level {i + 1}")
     # perform fixups for labels, allow 25 for now, this is kinda slow though so...
     # This allows for fully unique labels
     for j in range (25):
@@ -383,8 +401,9 @@ def insert_player_spawn_into_codes_file(codes_file_location, level_bot_map):
         break
     # add if statements for all levels
     player_spawn_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
-        level_index=i, code_string=code_string,
-        next_label=f"PLAYER_SPAWN_LEVEL_INDEX_{i}",
+        level_index=i + 1, # 1 indexed!
+        code_string=code_string,
+        next_label=f"PLAYER_SPAWN_LEVEL_INDEX_{i+1}",
         end_label=f"END_OF_PLAYER_SPAWN_CODE")
   # add final jump code
   player_spawn_code += "\nEND_OF_PLAYER_SPAWN_CODE:\n"

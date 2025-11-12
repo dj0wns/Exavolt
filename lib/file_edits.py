@@ -12,7 +12,7 @@ from .ma_tools import csv_rebuilder
 
 CSV_SUFFIX = ".new"
 
-def apply_csv_edits(metadata, iso_dir, csv_file, values, is_gc):
+def apply_csv_edits(iso_dir, csv_file, values, is_gc):
 
   # First we need to extract the csv
   tmpdirname = tempfile.TemporaryDirectory()
@@ -37,6 +37,8 @@ def apply_csv_edits(metadata, iso_dir, csv_file, values, is_gc):
       csv_matrix.append(row)
 
     for edit in values:
+      if "operation" not in edit:
+        edit["operation"] = "replace"
       match edit["operation"]:
           case "replace":
             csv_matrix[edit['row']][edit['col']] = edit['value']

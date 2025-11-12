@@ -32,7 +32,25 @@ SAVE_FILE_NAME_LOOP:
   bne SAVE_FILE_NAME_LOOP
 
 VALID_SAVE:
+  # Reimplement indexing logic here to make sure we grab the right index,
+  # respecting secondary save files.
+  cmplw r27, r24
+  blt SAVE_INDEX_TOO_SMALL
   b END
+
+SAVE_INDEX_TOO_SMALL:
+  # Need to close the card and result the loop, don't exit normally
+  addi r3, r1, 0x8
+  call CARD_CLOSE
+
+  # Increment the found profile index
+  addi r27, r27, 0x1
+
+  # Use the count register to continue loop
+  lis r12, CONTINUE_LOOP@h
+  ori r12, r12, CONTINUE_LOOP@l
+  mtctr r12
+  bctr
 
 INVALID_SAVE:
   # Need to close the card and result the loop, don't exit normally
@@ -44,7 +62,6 @@ INVALID_SAVE:
   ori r12, r12, CONTINUE_LOOP@l
   mtctr r12
   bctr
-
 
 END:
 

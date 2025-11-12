@@ -3,7 +3,8 @@
     save_file_pointer,
     secondary_save_file_size,
     save_file_offset_version,
-    save_version) -%}
+    save_version,
+    save_file_offset_extra_levels_completed) -%}
 
 .macro sfd_call_macro addr
   lis r12,  \addr@h
@@ -42,6 +43,13 @@ ori r3, r3, {{ save_file_offset_version }}@l
 
 lis r4, {{ save_version }}@h
 ori r4, r4, {{ save_version }}@l
+stwx r4, r3, r21
+
+# Write level index value
+lis r3, {{ save_file_offset_extra_levels_completed }}@h
+ori r3, r3, {{ save_file_offset_extra_levels_completed }}@l
+
+li r4, 0
 stwx r4, r3, r21
 
 # TODO Write default level framing

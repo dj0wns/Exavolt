@@ -44,8 +44,8 @@ class IsoRebuildException(Exception):
         super().__init__(msg, *args, **kwargs)
 
 def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
-  sp_level_index = 0
-  mp_level_index = 0
+  sp_level_index = [0]
+  mp_level_index = [0]
   hacks = set()
   csv_edits = []
   assembly_files = set()
@@ -56,9 +56,10 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   scratch_memory_size = [0]
   scratch_memory_dict = lib.scratch_memory.default_scratch_memory_entries(scratch_memory_size)
 
-  player_bot_list = lib.level.LEVEL_BOT_MAP.copy()
-  level_invent_dict_list_initial = [False] * 58 # used for seeing if its modified
-  level_invent_dict_list = level_invent_dict_list_initial.copy()
+  sp_level_list = lib.level.DEFAULT_SP_LEVEL_ARRAY.copy()
+  mp_level_list = lib.level.DEFAULT_MP_LEVEL_ARRAY.copy()
+  insert_level_list = [] # tuple of (index, level)
+
   try:
     if extract_only or no_rebuild:
       tmp_dir_name = lib.iso.extract_iso(input_iso, str(output_iso))
@@ -71,7 +72,8 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
   except Exception:
     raise IsoExtractionException()
 
-  has_assembly_files = False
+  lib.level.init_default_levels(tmp_dir_name)
+
   stage2_file_location = os.path.join(tmp_dir_name, STAGE2_FILE)
   pathlib.Path(stage2_file_location).touch()
   codes_file_location = os.path.join(tmp_dir_name, CODES_FILE)
@@ -91,42 +93,34 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
       mod_metadatas += lib.metadata_loader.collect_mods_from_files(files)
 
     for metadata in mod_metadatas:
-      summary = metadata.summary()
+      data = metadata.data
       #add hacks
-      for hack in summary["Hacks Required"]:
-        hacks.add(hack)
-      # see if there are any assembly injections, if so need to expand the dol
-      if metadata.has_assembly_files:
-        has_assembly_files = True
-        print("Injecting assembly")
-
+      if 'hacks_required' in data:
+        for hack in data["hacks_required"]:
+          hacks.add(hack)
 
     for metadata in mod_metadatas:
+      data = metadata.data
       if metadata.is_default:
         # Skip default mods which arent explicitly mentioned
-        print (metadata.title, hacks)
-        if metadata.title not in hacks:
+        print (data['title'], hacks)
+        if data['title'] not in hacks:
           continue
-      summary = metadata.summary()
-      print(summary)
-      campaign_level_count = summary["Campaign Levels"]
-      mp_level_count = summary["Multiplayer Levels"]
+      print(data)
       #add global scratch memory entries
-      for entry in summary["Scratch memory entries"]:
+      for entry in data["scratch_memory"]:
         if entry['global']:
           lib.scratch_memory.add_entry_to_dict(entry, scratch_memory_dict, scratch_memory_size)
-      #add csv edits
-      for csv_edit in summary["CSV Edits"]:
+      # add csv edits
+      for csv_edit in data["csv_edits"]:
         csv_edits.append(csv_edit)
-      if campaign_level_count + sp_level_index > len(lib.level.CAMPAIGN_LEVEL_NAMES):
-        print(f'Too many single player levels being injected! {campaign_level_count + sp_level_index} exceeds the limit of {len(lib.level.CAMPAIGN_LEVEL_NAMES)} ')
+      if len(sp_level_list) > 200:
+        print(f'Too many single player levels being injected! Exceeds the limit of 200')
         raise ModInsertionException()
-      if mp_level_count + mp_level_index > len(lib.level.MULTIPLAYER_LEVEL_NAMES):
-        print(f'Too many single player levels being injected! {mp_level_count + mp_level_index} exceeds the limit of {len(lib.level.MULTIPLAYER_LEVEL_NAMES)} ')
+      if len(mp_level_list) > 200:
+        print(f'Too many multiplayer player levels being injected! Exceeds the limit of 200')
         raise ModInsertionException()
-      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, player_bot_list, level_invent_dict_list, scratch_memory_dict, scratch_memory_size)
-      sp_level_index += campaign_level_count
-      mp_level_index += mp_level_count
+      lib.insert_mod.insert_mod(metadata, tmp_dir_name, sp_level_index, mp_level_index, dol, True, codes_file_location, sp_level_list, mp_level_list, insert_level_list, scratch_memory_dict, scratch_memory_size)
   except Exception:
     raise ModInsertionException()
 
@@ -163,25 +157,11 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
 
     for csv_file, values in csv_dict.items():
       print(f'Applying csv edits to {csv_file}\n{values}')
-      lib.file_edits.apply_csv_edits(metadata, tmp_dir_name, csv_file, values, True)
+      lib.file_edits.apply_csv_edits(tmp_dir_name, csv_file, values, True)
   except Exception:
     raise ValueError("Error applying csv edits")
 
   try:
-    # Insert bot type spawning if the list has any changes
-    if player_bot_list != lib.level.LEVEL_BOT_MAP:
-      print("Inserting player bot modifications")
-      has_assembly_files = True
-      lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
-      lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
-
-    # Insert bot type spawning if the list has any changes
-    if level_invent_dict_list != level_invent_dict_list_initial:
-      print("Inserting player inventory modifications")
-      has_assembly_files = True
-      lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
-
-
     asm_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"asm")
 
     # With the addition of scratch memory,
@@ -204,16 +184,46 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
     scratch_memory_dict['SCRATCH_MEMORY_SIZE'] = scratch_memory_size[0]
     lib.assembly.insert_assembly_into_codes_file(codes_file_location,
         os.path.join(asm_path, "DeclareScratchMemory.asm"),
-        0x80156758, scratch_memory_dict)
+        0x80156758, scratch_memory_dict, immediate_exec = True)
 
     # Add secondary save file codes
     lib.secondary_save_file.apply_secondary_save_file_codes(
+        dol,
         scratch_memory_dict,
         asm_path,
         codes_file_location)
-    print(scratch_memory_dict)
 
     iso_mst = os.path.join(tmp_dir_name, "root", "files", "mettlearms_gc.mst")
+
+    # Override level array!
+    lib.level.apply_level_array_codes(
+        dol,
+        scratch_memory_dict,
+        asm_path,
+        codes_file_location,
+        sp_level_list,
+        mp_level_list,
+        insert_level_list,
+        tmp_dir_name,
+        True)
+
+    # Always insert bot type spawning
+    print("Inserting player bot modifications")
+    lib.dol.apply_hack(dol, lib.hacks.DISABLE_HUD_CREATE)
+    player_bot_list = [level.starting_bot for level in sp_level_list + mp_level_list]
+    lib.assembly.insert_player_spawn_into_codes_file(codes_file_location, player_bot_list)
+
+    # See if there are any modified inventories
+    level_invent_dict_list = []
+    has_invent_overrides = False
+    for level in sp_level_list + mp_level_list:
+      if level.inventory_override:
+        has_invent_overrides = True
+      level_invent_dict_list.append(level.inventory_override)
+    if has_invent_overrides:
+      print("Inserting player inventory modifications")
+      lib.assembly.insert_player_inventory_into_codes_file(codes_file_location, level_invent_dict_list)
+
     lib.ma_tools.mst_insert.execute(True, iso_mst, [stage2_file_location, codes_file_location], "")
 
   except Exception:
