@@ -25,6 +25,8 @@ def create_debug_header(file, address):
     debug_header = (
         f" CODE_INJECTION_HEADER {file} --- insert at 0x{hex(address)} START: "
     )
+    # compat with windows paths, escape backslash
+    debug_header.replace('\\', '\\\\')
     # 3 here because of the null termination i believe
     while len(debug_header) % 4 != 3:
         debug_header += "\0"
