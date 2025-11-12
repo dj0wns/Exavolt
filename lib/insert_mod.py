@@ -38,7 +38,7 @@ def insert_mod(
 
     for assembly_file in data["assembly_files"]:
         assembly_files[assembly_file["file"]] = int(
-            assembly_file["injection_location"], 16
+            assembly_file.get("injection_location", '0'), 16
         )
 
     for gecko_code in data["gecko_codes"]:
@@ -115,7 +115,7 @@ def insert_mod(
                 level["csv"],
                 level["csv_material_file"]
                 if "csv_material_file" in level
-                else "WEDMmines01",
+                else "ms_mines01",
                 level["load_function_offset"] if "load_function_offset" in level else 0,
                 level["unload_function_offset"]
                 if "unload_function_offset" in level
@@ -209,6 +209,8 @@ def insert_mod(
                         file_path,
                         assembly_files[os.path.basename(info.filename)],
                         local_scratch_memory_replacement_dict,
+                        True,
+                        assembly_files[os.path.basename(info.filename)] == 0
                     )
                 elif os.path.basename(info.filename) in data["movie_files"]:
                     tmpdirname = tempfile.TemporaryDirectory()

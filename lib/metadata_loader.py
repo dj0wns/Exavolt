@@ -42,7 +42,7 @@ SCHEMA = {
                     "file": {"type": "string"},
                     "injection_location": {"type": "string"},
                 },
-                "required": ["file", "injection_location"],
+                "required": ["file"],
             },
         },
         "scratch_memory": {
