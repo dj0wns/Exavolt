@@ -1,6 +1,6 @@
 {
-  "title": "E1M1: SlipGate Complex",
-  "author": "Vissova",
+  "title": "Mod title",
+  "author": "Mod author",
   "hacks_required": ["extended_heap"],
   "levels":
     [
@@ -34,6 +34,7 @@
                "reserve_ammo": 30
             }
           ],
+
           "secondary": 
           [
             {
@@ -47,15 +48,14 @@
                "reserve_ammo": 0
             }
           ],
+
           "default_primary_slot" : 2,
-          "default_secondary_slot" : 1,
+          "default_secondary_slot" : 2,
           "battery_count" : 5,
-          "washer_count" : 69,
-          "chip_count" : 2,
+          "washer_count" : 60,
+          "chip_count" : 0,
           "secret_chip_count" : 15,
           "arm_servo_count" : 3,
-          "det_pack_count" : 4,
-          "goff_part_count" : 2
         }
       }
 
