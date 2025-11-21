@@ -265,7 +265,7 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "WEWZzombi01",
         "WEWZzombi01",
         "ms_zombi01",
-        0x80132BA0,
+        0x80142BA0,
         0x80142C24,
         0x80142C90,
         0x801B10B8,
