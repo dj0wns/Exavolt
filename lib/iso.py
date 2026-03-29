@@ -31,6 +31,7 @@ def rebuild_iso(output_iso, iso_dir):
     print(f"Rebuilding {iso_dir} to {output_iso}")
     src = Path(iso_dir).resolve()
     iso = GamecubeISO.from_root(src)
+    iso.MaxSize = 8000000000
     # bug in pyisotools
     iso._onVirtualTaskStart = None
     iso.build(output_iso, preCalc=False)
