@@ -103,6 +103,7 @@ def insert_mod(
                 level_list[level_index].starting_bot = level["player_bot"].lower()
             if "custom_inventory" in level:
                 level_list[level_index].inventory_override = level["custom_inventory"]
+                print(level_list[level_index].inventory_override)
         elif level["type"] == LEVEL_TYPES[1] or level["mode"] == "insert":
             # Always insert mp levels at the end
             # We need to create a new level and send it back to insert later

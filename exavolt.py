@@ -266,7 +266,7 @@ def execute(input_iso, output_iso, mod_folder, extract_only, no_rebuild, files):
         for level in sp_level_list + mp_level_list:
             if level.inventory_override:
                 has_invent_overrides = True
-            level_invent_dict_list.append(level.inventory_override)
+                level_invent_dict_list.append((level.level_index, level.inventory_override))
         if has_invent_overrides:
             print("Inserting player inventory modifications")
             lib.assembly.insert_player_inventory_into_codes_file(

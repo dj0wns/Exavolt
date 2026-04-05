@@ -203,13 +203,11 @@ def insert_player_inventory_into_codes_file(
 ):
     insertion_address = 0x801C87D0
     player_invent_code = lib.assembly_codes.HEADERS
-    for i in range(1, 58):
+    for index, level_invent_map in level_invent_dict_list:
         code_string = ""
+        print(level_invent_map)
         # no mods to the weapons so don't add any code
         # ALL keys must be specified!!!
-        level_invent_map = level_invent_dict_list[i]
-        if not level_invent_map:
-            continue
         if level_invent_map["primary"]:
             # store some stuff on the stack, copied from CInventory::SetToDefaults
             code_string += r"""
@@ -277,7 +275,7 @@ def insert_player_inventory_into_codes_file(
                     not in lib.assembly_codes.WEAPON_STRING_ADDR_DICT
                 ):
                     raise ValueException(
-                        f"Unknown weapon type: {item['name']} on level {i}"
+                        f"Unknown weapon type: {item['name']} on level {index}"
                     )
                 weapon_offset = lib.assembly_codes.WEAPON_STRING_ADDR_DICT[
                     item["name"].lower()
@@ -300,7 +298,7 @@ def insert_player_inventory_into_codes_file(
                     not in lib.assembly_codes.WEAPON_STRING_ADDR_DICT
                 ):
                     raise ValueException(
-                        f"Unknown weapon type: {item['name']} on level {i}"
+                        f"Unknown weapon type: {item['name']} on level {index}"
                     )
                 weapon_offset = lib.assembly_codes.WEAPON_STRING_ADDR_DICT[
                     item["name"].lower()
@@ -420,9 +418,9 @@ def insert_player_inventory_into_codes_file(
 
         # add if statements for all levels
         player_invent_code += lib.assembly_codes.LEVEL_IF_CHECK.format(
-            level_index=i,
+            level_index=index,
             code_string=code_string,
-            next_label=f"PLAYER_INVENT_LEVEL_INDEX_{i}",
+            next_label=f"PLAYER_INVENT_LEVEL_INDEX_{index}",
             end_label=f"END_OF_PLAYER_INVENT_CODE",
         )
     # add final jump code
