@@ -38,6 +38,8 @@ class Level:
     inventory_override: dict
     # list of injection_location, raw file as string, memory_replacement_dict
     assembly_files: list
+    # Avohkii - Vanilla index remapping system for hardcoded cmpwi index checks
+    vanilla_index: int = None
 
     # For csv file
     def add_level_info(self, csv_row):
@@ -149,8 +151,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         0,
         0,
         0,
-        0.0,
-        1.0,
+        14.0,
+        4.0,
         {},
         [],
     ),
@@ -164,8 +166,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         0,
         0,
         0,
-        0.0,
-        1.0,
+        14.0,
+        4.0,
         {},
         [],
     ),
@@ -207,8 +209,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "ms_race_01",
         0,
         0,
-        0,
-        0,
+        0x800D49CC,
+        0x801B10B8,
         50.0,
         4.0,
         {},
@@ -224,8 +226,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         0,
         0,
         0,
-        0.0,
-        1.0,
+        10.0,
+        4.0,
         {},
         [],
     ),
@@ -402,10 +404,10 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "ms_chase01",
         0,
         0,
-        0,
-        0,
-        0.0,
-        1.0,
+        0x800D49CC,
+        0x801B10B8,
+        50.0,
+        4.0,
         {},
         [],
     ),
@@ -522,8 +524,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "ms_city_05",
         0,
         0,
-        0,
-        0,
+        0x801B2E4C,
+        0x801B10B8,
         0.0,
         1.0,
         {},
@@ -569,8 +571,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         0,
         0,
         0,
-        0.0,
-        1.0,
+        10.0,
+        4.0,
         {},
         [],
     ),
@@ -599,8 +601,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         0,
         0,
         0,
-        0.0,
-        1.0,
+        10.0,
+        4.0,
         {},
         [],
     ),
@@ -612,8 +614,8 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "ms_invas01",
         0,
         0,
-        0,
-        0,
+        0x801B2E4C,
+        0x801B10B8,
         0.0,
         1.0,
         {},
@@ -687,10 +689,10 @@ DEFAULT_SP_LEVEL_ARRAY = [
         "ms_rockt01",
         0,
         0,
-        0,
-        0,
-        0.0,
-        1.0,
+        0x800D49CC,
+        0x801B10B8,
+        50.0,
+        4.0,
         {},
         [],
     ),
@@ -1016,6 +1018,14 @@ NULL_LEVEL = Level(
     [],
 )
 
+# Avohkii - Vanilla index remapping system for hardcoded cmpwi index checks
+for i, level in enumerate(DEFAULT_SP_LEVEL_ARRAY):
+    level.vanilla_index = i
+
+for i, level in enumerate(DEFAULT_MP_LEVEL_ARRAY):
+    level.vanilla_index = (
+        len(DEFAULT_SP_LEVEL_ARRAY) + i
+)
 
 def level_array_to_bytes(level_array):
     level_buffer = bytearray()
@@ -1295,6 +1305,116 @@ def fixup_multi_player_csv(sp_array, mp_array, iso_dir, is_gc):
         True, iso_mst, [os.path.join(csv_dir_name, MULTI_LEVEL_CSV_FILE)], ""
     )
 
+# Avohkii - Vanilla index remapping system for hardcoded cmpwi index checks
+LEVEL_COMPARE_PATCHES = {
+    # Wasteland Thunder
+    0x040626BC: (4, 0x2C000004),
+    0x040CC950: (4, 0x2C000004),
+    0x040CDFBC: (4, 0x2C000004),
+    0x040CEBDC: (4, 0x2C000004),
+    0x040CEC20: (4, 0x2C000004),
+    0x040CECAC: (4, 0x2C000004),
+    0x040CEDDC: (4, 0x2C000004),
+    0x040D0434: (4, 0x2C000004),
+    0x040D1D28: (4, 0x2C000004),
+    0x040D1E20: (4, 0x2C000004),
+    0x040D41A4: (4, 0x2C000004),
+    0x040d4a3c: (4, 0x2C000004),
+    0x041983EC: (4, 0x2C000004),
+    0x0419C14C: (4, 0x2C000004),
+    0x041B0B68: (4, 0x2C000004),
+    0x041B2CDC: (4, 0x2C000004),
+    0x041C8B2C: (4, 0x2C000004),
+    0x041C8B74: (4, 0x2C000004),
+    0x041C8C34: (4, 0x2C000004),
+    0x041840FC: (4, 0x2C090004),
+    # Hold Your Ground
+    0x040BBE80: (12, 0x2C00000C),
+    0x040CBF30: (12, 0x2C00000C),
+    0x040CE0BC: (12, 0x2C00000C),
+    0x040D2174: (12, 0x2C00000C),
+    0x040F3960: (12, 0x2C00000C),
+    0x041A37A4: (12, 0x2C00000C),
+    0x041B0B70: (12, 0x2C00000C),
+    0x041B10E8: (12, 0x2C00000C),
+    0x041B2CF4: (12, 0x2C00000C),
+    # What Research
+    0x040CBA9C: (13, 0x2C00000D),
+    0x040CBB20: (13, 0x2C00000D),
+    # Wasteland Chase
+    0x040626C4: (17, 0x2C000011),
+    0x040B5770: (17, 0x2C000011),
+    0x040BC07C: (17, 0x2C000011),
+    0x040CC944: (17, 0x2C000011),
+    0x040CD3A0: (17, 0x2C000011),
+    0x040CDFB0: (17, 0x2C000011),
+    0x040CEC00: (17, 0x2C000011),
+    0x040CEC28: (17, 0x2C000011),
+    0x040CECB4: (17, 0x2C000011),
+    0x040CEDE4: (17, 0x2C000011),
+    0x040D1D30: (17, 0x2C000011),
+    0x040D1E28: (17, 0x2C000011),
+    0x040D4A44: (17, 0x2C000011),
+    0x041983F4: (17, 0x2C000011),
+    0x041B0B78: (17, 0x2C000011),
+    0x041B2CE4: (17, 0x2C000011),
+    0x041C8B34: (17, 0x2C000011),
+    0x041C8B68: (17, 0x2C000011),
+    0x041C8C3C: (17, 0x2C000011),
+    # Unhandled Exeception
+    0x040246ac: (24, 0x2C000018),
+    # Access The Ruins
+    0x041B0E58: (25, 0x2C000019),
+    # Unwelcome Home
+    0x040AF3A8: (31, 0x2C00001F),
+    0x041987B8: (31, 0x2C00001F),
+    # 15 Minutes
+    0x0417C0AC: (32, 0x2C000020),
+    0x0417C208: (32, 0x2C000020),
+    # Race To The Rocket
+    0x040CB130: (36, 0x2C000024),
+    0x040CDFC8: (36, 0x2C000024),
+    0x04179018: (36, 0x2C000024),
+    0x041983FC: (36, 0x2C000024),
+    0x0419C154: (36, 0x2C000024),
+    0x041B0B80: (36, 0x2C000024),
+    0x041B2CEC: (36, 0x2C000024),
+    0x041C8B3C: (36, 0x2C000024),
+    0x041C8B80: (36, 0x2C000024),
+    0x041c8c44: (36, 0x2C000024),
+    # One Small Step
+    0x0417C0A4: (37, 0x2C000025),
+    0x0417c200: (37, 0x2C000025),
+    # General Corrosive
+    0x0416BF08: (40, 0x2C000028),
+    0x041B10F0: (40, 0x2C000028),
+    0x041B1608: (40, 0x2C000028),
+    # Ruins
+    0x04063FA4: (53, 0x20C00035),
+}
+
+def build_level_index_remap(sp_array):
+    remap = {}
+
+    for new_index, level in enumerate(sp_array):
+        if level.vanilla_index is not None:
+            remap[level.vanilla_index] = new_index
+
+    return remap
+
+def patch_cmp_immediate(dol, address, original_instruction, new_value):
+    patched = (original_instruction & 0xFFFF0000) | (new_value & 0xFFFF)
+    apply_hack(dol, [address, patched])
+
+def patch_level_index_compares(dol, remap):
+    for address, (vanilla_index, original_instruction) in LEVEL_COMPARE_PATCHES.items():
+        if vanilla_index in remap:
+            patch_cmp_immediate(
+                dol,
+                address,
+                original_instruction,
+                remap[vanilla_index]
+            )
 
 def insert_levels_into_sp_array(insert_array, sp_array):
     i = 0
@@ -1324,6 +1444,10 @@ def apply_level_array_codes(
     is_gc,
 ):
     insert_levels_into_sp_array(insert_array, sp_array)
+    
+    # Avohkii - Vanilla index remapping system for hardcoded cmpwi index checks
+    remap = build_level_index_remap(sp_array)
+    patch_level_index_compares(dol, remap)
 
     local_dict = memory_dict.copy()
     local_dict["LEVEL_ARRAY_RAW"] = level_array_to_bytes(
